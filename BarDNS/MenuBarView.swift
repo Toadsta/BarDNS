@@ -83,41 +83,6 @@ struct MenuBarView: View {
                     }
                 }
                 
-                // GetFlix DNS Menu
-                Menu {
-                    ForEach(Array(DNSManager.shared.getflixServers.keys.sorted()), id: \.self) { location in
-                        Button(action: {
-                            activateDNS(type: .getflix(location))
-                        }) {
-                            HStack {
-                                Text(getGetflixLabelWithPing(location))
-                                Spacer()
-                                if dnsSettings.first?.activeGetFlixLocation == location {
-                                    Image(systemName: "checkmark")
-                                }
-                            }
-                        }
-                    }
-                } label: {
-                    HStack {
-                        Text("GetFlix DNS")
-                        Spacer()
-                        if let activeLocation = dnsSettings.first?.activeGetFlixLocation {
-                            Circle()
-                                .fill(Color.green)
-                                .frame(width: 8, height: 8)
-                        }
-                        if isSpeedTesting {
-                            ProgressView()
-                                .scaleEffect(0.6)
-                                .frame(width: 12, height: 12)
-                                .padding(.trailing, 4)
-                        }
-                    }
-                }
-                .padding(.horizontal)
-                .disabled(isUpdating || isSpeedTesting)
-                
                 Divider()
                 
                 // Custom DNS section
@@ -279,15 +244,6 @@ struct MenuBarView: View {
         return baseLabel
     }
     
-    private func getGetflixLabelWithPing(_ location: String) -> String {
-        guard !pingResults.isEmpty else { return location }
-        
-        if let result = pingResults.first(where: { $0.dnsName == "Getflix: \(location)" }) {
-            return "\(location) (\(Int(result.responseTime))ms)"
-        }
-        
-        return location
-    }
     
     private func getCustomDNSLabelWithPing(_ server: CustomDNSServer) -> String {
         guard !pingResults.isEmpty else { return server.name }
