@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		9165B6682D6B616D00DD9643 /* DNS_Easy_SwitcherApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9165B6672D6B616D00DD9643 /* DNS_Easy_SwitcherApp.swift */; };
+		9165B6682D6B616D00DD9643 /* BarDNS.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9165B6672D6B616D00DD9643 /* BarDNS.swift */; };
 		9165B66A2D6B616D00DD9643 /* MenuBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9165B6692D6B616D00DD9643 /* MenuBarView.swift */; };
 		9165B66C2D6B616D00DD9643 /* DNSSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9165B66B2D6B616D00DD9643 /* DNSSettings.swift */; };
 		9165B66E2D6B616D00DD9643 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9165B66D2D6B616D00DD9643 /* Assets.xcassets */; };
@@ -24,7 +24,7 @@
 
 /* Begin PBXFileReference section */
 		9165B6642D6B616D00DD9643 /* DNS Easy Switcher.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "DNS Easy Switcher.app"; sourceTree = BUILT_PRODUCTS_DIR; };
-		9165B6672D6B616D00DD9643 /* DNS_Easy_SwitcherApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DNS_Easy_SwitcherApp.swift; sourceTree = "<group>"; };
+		9165B6672D6B616D00DD9643 /* BarDNS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BarDNS.swift; sourceTree = "<group>"; };
 		9165B6692D6B616D00DD9643 /* MenuBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarView.swift; sourceTree = "<group>"; };
 		9165B66B2D6B616D00DD9643 /* DNSSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DNSSettings.swift; sourceTree = "<group>"; };
 		9165B66D2D6B616D00DD9643 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -54,7 +54,7 @@
 		9165B65B2D6B616D00DD9643 = {
 			isa = PBXGroup;
 			children = (
-				9165B6662D6B616D00DD9643 /* DNS Easy Switcher */,
+				9165B6662D6B616D00DD9643 /* BarDNS */,
 				9165B6652D6B616D00DD9643 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -67,10 +67,10 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		9165B6662D6B616D00DD9643 /* DNS Easy Switcher */ = {
+		9165B6662D6B616D00DD9643 /* BarDNS */ = {
 			isa = PBXGroup;
 			children = (
-				9165B6672D6B616D00DD9643 /* DNS_Easy_SwitcherApp.swift */,
+				9165B6672D6B616D00DD9643 /* BarDNS.swift */,
 				9165B6692D6B616D00DD9643 /* MenuBarView.swift */,
 				9165B66B2D6B616D00DD9643 /* DNSSettings.swift */,
 				9165B66D2D6B616D00DD9643 /* Assets.xcassets */,
@@ -85,7 +85,7 @@
 				91FFB82E2D6E6868008C0471 /* DNSSpeedTester.swift */,
 				91FFB8FF2D70E000008C0471 /* AboutView.swift */,
 			);
-			path = "DNS Easy Switcher";
+			path = BarDNS;
 			sourceTree = "<group>";
 		};
 		9165B66F2D6B616D00DD9643 /* Preview Content */ = {
@@ -176,7 +176,7 @@
 				9165B67B2D6B62CC00DD9643 /* DNSManager.swift in Sources */,
 				91FFB82D2D6E6639008C0471 /* EditCustomDNSView.swift in Sources */,
 				91FFB9002D70E000008C0471 /* AboutView.swift in Sources */,
-				9165B6682D6B616D00DD9643 /* DNS_Easy_SwitcherApp.swift in Sources */,
+				9165B6682D6B616D00DD9643 /* BarDNS.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -309,24 +309,25 @@
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGN_ENTITLEMENTS = "DNS Easy Switcher/DNS_Easy_Switcher.entitlements";
 				CODE_SIGN_IDENTITY = "Apple Development";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"DNS Easy Switcher/Preview Content\"";
-				DEVELOPMENT_TEAM = 6645MJMX63;
+				DEVELOPMENT_TEAM = A62LGK8CNX;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleDisplayName = "DNS Easy Switcher";
+				INFOPLIST_KEY_CFBundleDisplayName = BarDNS;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MACOSX_DEPLOYMENT_TARGET = "$(RECOMMENDED_MACOSX_DEPLOYMENT_TARGET)";
 				MARKETING_VERSION = 1.0.7;
-				PRODUCT_BUNDLE_IDENTIFIER = com.linfordsoftware.dnseasyswitcher;
+				PRODUCT_BUNDLE_IDENTIFIER = com.toadsie.BarDNS;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -342,24 +343,25 @@
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGN_ENTITLEMENTS = "DNS Easy Switcher/DNS_Easy_Switcher.entitlements";
 				CODE_SIGN_IDENTITY = "Apple Development";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"DNS Easy Switcher/Preview Content\"";
-				DEVELOPMENT_TEAM = 6645MJMX63;
+				DEVELOPMENT_TEAM = A62LGK8CNX;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleDisplayName = "DNS Easy Switcher";
+				INFOPLIST_KEY_CFBundleDisplayName = BarDNS;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MACOSX_DEPLOYMENT_TARGET = "$(RECOMMENDED_MACOSX_DEPLOYMENT_TARGET)";
 				MARKETING_VERSION = 1.0.7;
-				PRODUCT_BUNDLE_IDENTIFIER = com.linfordsoftware.dnseasyswitcher;
+				PRODUCT_BUNDLE_IDENTIFIER = com.toadsie.BarDNS;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_EMIT_LOC_STRINGS = YES;
