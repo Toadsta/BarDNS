@@ -10,7 +10,7 @@ import SwiftData
 import AppKit
 
 @main
-struct DNS_Easy_SwitcherApp: App {
+struct BarDNS: App {
     @StateObject private var menuBarController = MenuBarController()
     
     let modelContainer: ModelContainer

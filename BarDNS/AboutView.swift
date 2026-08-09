@@ -18,13 +18,13 @@ struct AboutView: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("DNS Easy Switcher")
+            Text("BarDNS")
                 .font(.headline)
             
             Text(versionText)
                 .foregroundColor(.secondary)
             
-            Link("GitHub — glinford/dns-easy-switcher", destination: URL(string: "https://github.com/glinford/dns-easy-switcher")!)
+            Link("GitHub — Toadsta/BarDNS", destination: URL(string: "https://github.com/Toadsta/BarDNS")!)
             
             HStack {
                 Spacer()
