@@ -1,6 +1,6 @@
-# DNS Easy Switcher
-
-A simple macOS menu bar app that allows you to quickly switch between different DNS providers (or add custom ones).
+# BarDNS
+[A fork of DNS Easy Switcher](https://github.com/glinford/dns-easy-switcher)
+A macOS menu bar app that allows you to switch between different DNS providers or add custom ones DNS you provide.
 
 ![Screenshot of DNS Easy Switcher](screenshot.png)
 
@@ -12,7 +12,6 @@ A simple macOS menu bar app that allows you to quickly switch between different 
   - Cloudflare DNS (1.1.1.1)
   - Quad9 DNS (9.9.9.9)
   - AdGuard DNS (94.140.14.14)
-  - GetFlix DNS (with list of all locations)
 - Disable DNS Overrides (DHCP-Provided DNS)
 - Add and manage your own custom DNS servers
 - Test DNS speed to find the fastest provider
@@ -79,7 +78,7 @@ Due to macOS security requirements, administrator privileges are required each t
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/glinford/dns-easy-switcher.git
+git clone https://github.com/Toadsta/BarDNS.git
 ```
 2. Open the project in Xcode 15 or later
 3. Build and run the project
