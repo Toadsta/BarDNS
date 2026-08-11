@@ -1,6 +1,6 @@
 //
 //  MenuBarView.swift
-//  DNS Easy Switcher
+//  BarDNS
 //
 //  Created by Gregory LINFORD on 23/02/2025.
 //
@@ -405,7 +405,6 @@ struct MenuBarView: View {
         case quad9
         case adguard
         case custom(CustomDNSServer)
-        case getflix(String)
         
         static func == (lhs: DNSType, rhs: DNSType) -> Bool {
             switch (lhs, rhs) {
@@ -419,8 +418,7 @@ struct MenuBarView: View {
                 return true
             case (.custom(let lServer), .custom(let rServer)):
                 return lServer.id == rServer.id
-            case (.getflix(let lLocation), .getflix(let rLocation)):
-                return lLocation == rLocation
+        
             default:
                 return false
             }
@@ -466,17 +464,7 @@ struct MenuBarView: View {
                     }
                 }
                 isUpdating = false
-            }
-        case .getflix(let location):
-            if let dnsServer = DNSManager.shared.getflixServers[location] {
-                DNSManager.shared.setCustomDNS(servers: [dnsServer]) { success in
-                    if success {
-                        Task { @MainActor in
-                            updateSettings(type: type)
-                        }
-                    }
-                    isUpdating = false
-                }
+        
             }
         case .none:
             updateSettings(type: type)
@@ -490,11 +478,6 @@ struct MenuBarView: View {
             settings.isQuad9Enabled = (type == .quad9)
             settings.isAdGuardEnabled = type == .adguard ? true : nil
             
-            if case .getflix(let location) = type {
-                settings.activeGetFlixLocation = location
-            } else {
-                settings.activeGetFlixLocation = nil
-            }
             
             if case .custom(let server) = type {
                 settings.activeCustomDNSID = server.id

@@ -1,6 +1,6 @@
 //
 //  DNSSpeedTester.swift
-//  DNS Easy Switcher
+//  BarDNS
 //
 //  Created by Gregory LINFORD on 25/02/2025.
 //
@@ -54,9 +54,6 @@ class DNSSpeedTester {
             ("AdGuard", dnsManager.adguardServers[0], false, nil)
         ]
         
-        // Add all Getflix servers
-        let getflixServers = dnsManager.getflixServers.sorted(by: { $0.key < $1.key })
-        allDNSToTest.append(contentsOf: getflixServers.map { ("Getflix: \($0.key)", $0.value, false, nil) })
         
         // Add custom DNS servers (first entry only to keep test time reasonable)
         for server in customServers {

@@ -1,6 +1,6 @@
 //
 //  CustomDNSManagerView.swift
-//  DNS Easy Switcher
+//  BarDNS
 //
 //  Created by Gregory LINFORD on 25/02/2025.
 //

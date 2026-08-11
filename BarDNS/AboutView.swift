@@ -1,6 +1,6 @@
 //
 //  AboutView.swift
-//  DNS Easy Switcher
+//  BarDNS
 //
 //  Created by Gregory LINFORD on 27/02/2025.
 //
