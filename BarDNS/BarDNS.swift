@@ -1,6 +1,6 @@
 //
-//  DNS_Easy_SwitcherApp.swift
-//  DNS Easy Switcher
+//  BarDNS.swift
+//  BarDNS
 //
 //  Created by Gregory LINFORD on 23/02/2025.
 //
@@ -48,7 +48,7 @@ struct BarDNS: App {
         .defaultSize(width: 0, height: 0)
         .modelContainer(modelContainer)
         
-        MenuBarExtra("DNS Switcher", systemImage: "network") {
+        MenuBarExtra("BarDNS", systemImage: "bolt.horizontal.fill") {
             MenuBarView()
                 .environment(\.modelContext, modelContainer.mainContext)
                 .frame(width: 300)

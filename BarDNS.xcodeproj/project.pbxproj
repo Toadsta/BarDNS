@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		55BCC425302B53D6003A14EB /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 55BCC424302B53D6003A14EB /* README.md */; };
+		55BCC426302B53D6003A14EB /* LICENSE in Resources */ = {isa = PBXBuildFile; fileRef = 55BCC423302B53D6003A14EB /* LICENSE */; };
 		9165B6682D6B616D00DD9643 /* BarDNS.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9165B6672D6B616D00DD9643 /* BarDNS.swift */; };
 		9165B66A2D6B616D00DD9643 /* MenuBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9165B6692D6B616D00DD9643 /* MenuBarView.swift */; };
 		9165B66C2D6B616D00DD9643 /* DNSSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9165B66B2D6B616D00DD9643 /* DNSSettings.swift */; };
@@ -23,6 +25,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		55BCC423302B53D6003A14EB /* LICENSE */ = {isa = PBXFileReference; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
+		55BCC424302B53D6003A14EB /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		9165B6642D6B616D00DD9643 /* BarDNS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BarDNS.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		9165B6672D6B616D00DD9643 /* BarDNS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BarDNS.swift; sourceTree = "<group>"; };
 		9165B6692D6B616D00DD9643 /* MenuBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarView.swift; sourceTree = "<group>"; };
@@ -54,6 +58,8 @@
 		9165B65B2D6B616D00DD9643 = {
 			isa = PBXGroup;
 			children = (
+				55BCC423302B53D6003A14EB /* LICENSE */,
+				55BCC424302B53D6003A14EB /* README.md */,
 				9165B6662D6B616D00DD9643 /* BarDNS */,
 				9165B6652D6B616D00DD9643 /* Products */,
 			);
@@ -112,7 +118,7 @@
 			dependencies = (
 			);
 			name = BarDNS;
-			productName = "DNS Easy Switcher";
+			productName = BarDNS;
 			productReference = 9165B6642D6B616D00DD9643 /* BarDNS.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -156,6 +162,8 @@
 			files = (
 				9165B6712D6B616D00DD9643 /* Preview Assets.xcassets in Resources */,
 				9165B66E2D6B616D00DD9643 /* Assets.xcassets in Resources */,
+				55BCC425302B53D6003A14EB /* README.md in Resources */,
+				55BCC426302B53D6003A14EB /* LICENSE in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

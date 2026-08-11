@@ -1,6 +1,6 @@
 //
 //  MenuBarView.swift
-//  DNS Easy Switcher
+//  BarDNS
 //
 //  Created by Gregory LINFORD on 23/02/2025.
 //
@@ -23,104 +23,40 @@ struct MenuBarView: View {
     var body: some View {
         Group {
             VStack {
-                // Cloudflare DNS
-                Toggle(getLabelWithPing("Cloudflare DNS", dnsType: .cloudflare), isOn: Binding(
-                    get: { dnsSettings.first?.isCloudflareEnabled ?? false },
-                    set: { newValue in
-                        if newValue && !isUpdating {
-                            activateDNS(type: .cloudflare)
-                        }
-                    }
-                ))
-                .padding(.horizontal)
-                .disabled(isUpdating || isSpeedTesting)
-                .overlay(alignment: .trailing) {
-                    if isSpeedTesting {
-                        ProgressView()
-                            .scaleEffect(0.6)
-                            .frame(width: 12, height: 12)
-                            .padding(.trailing, 8)
-                    }
+                // Custom DNS servers appear above the presets
+                ForEach(customServers) { server in
+                    dnsToggleRow(
+                        label: getCustomDNSLabelWithPing(server),
+                        isOn: dnsSettings.first?.activeCustomDNSID == server.id,
+                        action: { activateDNS(type: .custom(server)) }
+                    )
                 }
-                
-                // Quad9 DNS
-                Toggle(getLabelWithPing("Quad9 DNS", dnsType: .quad9), isOn: Binding(
-                    get: { dnsSettings.first?.isQuad9Enabled ?? false },
-                    set: { newValue in
-                        if newValue && !isUpdating {
-                            activateDNS(type: .quad9)
-                        }
-                    }
-                ))
-                .padding(.horizontal)
-                .disabled(isUpdating || isSpeedTesting)
-                .overlay(alignment: .trailing) {
-                    if isSpeedTesting {
-                        ProgressView()
-                            .scaleEffect(0.6)
-                            .frame(width: 12, height: 12)
-                            .padding(.trailing, 8)
-                    }
-                }
-                
-                // AdGuard DNS
-                Toggle(getLabelWithPing("AdGuard DNS", dnsType: .adguard), isOn: Binding(
-                    get: { dnsSettings.first?.isAdGuardEnabled ?? false },
-                    set: { newValue in
-                        if newValue && !isUpdating {
-                            activateDNS(type: .adguard)
-                        }
-                    }
-                ))
-                .padding(.horizontal)
-                .disabled(isUpdating || isSpeedTesting)
-                .overlay(alignment: .trailing) {
-                    if isSpeedTesting {
-                        ProgressView()
-                            .scaleEffect(0.6)
-                            .frame(width: 12, height: 12)
-                            .padding(.trailing, 8)
-                    }
-                }
-                
-                Divider()
-                
-                // Custom DNS section
+
                 if !customServers.isEmpty {
-                    Menu {
-                        ForEach(customServers) { server in
-                            Button(action: {
-                                activateDNS(type: .custom(server))
-                            }) {
-                                HStack {
-                                    Text(getCustomDNSLabelWithPing(server))
-                                    Spacer()
-                                    if dnsSettings.first?.activeCustomDNSID == server.id {
-                                        Image(systemName: "checkmark")
-                                    }
-                                }
-                            }
-                        }
-                    } label: {
-                        HStack {
-                            Text("Custom DNS")
-                            Spacer()
-                            if dnsSettings.first?.activeCustomDNSID != nil {
-                                Circle()
-                                    .fill(Color.green)
-                                    .frame(width: 8, height: 8)
-                            }
-                            if isSpeedTesting {
-                                ProgressView()
-                                    .scaleEffect(0.6)
-                                    .frame(width: 12, height: 12)
-                                    .padding(.trailing, 4)
-                            }
-                        }
-                    }
-                    .padding(.horizontal)
-                    .disabled(isUpdating || isSpeedTesting)
-                    
+                    Divider()
+                }
+
+                dnsToggleRow(
+                    label: getLabelWithPing("Cloudflare DNS", dnsType: .cloudflare),
+                    isOn: dnsSettings.first?.isCloudflareEnabled ?? false,
+                    action: { activateDNS(type: .cloudflare) }
+                )
+
+                dnsToggleRow(
+                    label: getLabelWithPing("Quad9 DNS", dnsType: .quad9),
+                    isOn: dnsSettings.first?.isQuad9Enabled ?? false,
+                    action: { activateDNS(type: .quad9) }
+                )
+
+                dnsToggleRow(
+                    label: getLabelWithPing("AdGuard DNS", dnsType: .adguard),
+                    isOn: dnsSettings.first?.isAdGuardEnabled ?? false,
+                    action: { activateDNS(type: .adguard) }
+                )
+
+                Divider()
+
+                if !customServers.isEmpty {
                     Button(action: {
                         showManageCustomDNSSheet()
                     }) {
@@ -132,7 +68,7 @@ struct MenuBarView: View {
                     .padding(.vertical, 5)
                     .disabled(isSpeedTesting)
                 }
-                
+
                 Button(action: {
                     showAddCustomDNSSheet()
                 }) {
@@ -219,7 +155,29 @@ struct MenuBarView: View {
             ensureSettingsExist()
         }
     }
-    
+
+    @ViewBuilder
+    private func dnsToggleRow(label: String, isOn: Bool, action: @escaping () -> Void) -> some View {
+        Toggle(label, isOn: Binding(
+            get: { isOn },
+            set: { newValue in
+                if newValue && !isUpdating {
+                    action()
+                }
+            }
+        ))
+        .padding(.horizontal)
+        .disabled(isUpdating || isSpeedTesting)
+        .overlay(alignment: .trailing) {
+            if isSpeedTesting {
+                ProgressView()
+                    .scaleEffect(0.6)
+                    .frame(width: 12, height: 12)
+                    .padding(.trailing, 8)
+            }
+        }
+    }
+
     // Helper methods for getting ping results
     private func getLabelWithPing(_ baseLabel: String, dnsType: DNSType) -> String {
         guard !pingResults.isEmpty else { return baseLabel }
@@ -405,7 +363,6 @@ struct MenuBarView: View {
         case quad9
         case adguard
         case custom(CustomDNSServer)
-        case getflix(String)
         
         static func == (lhs: DNSType, rhs: DNSType) -> Bool {
             switch (lhs, rhs) {
@@ -419,8 +376,7 @@ struct MenuBarView: View {
                 return true
             case (.custom(let lServer), .custom(let rServer)):
                 return lServer.id == rServer.id
-            case (.getflix(let lLocation), .getflix(let rLocation)):
-                return lLocation == rLocation
+        
             default:
                 return false
             }
@@ -466,17 +422,7 @@ struct MenuBarView: View {
                     }
                 }
                 isUpdating = false
-            }
-        case .getflix(let location):
-            if let dnsServer = DNSManager.shared.getflixServers[location] {
-                DNSManager.shared.setCustomDNS(servers: [dnsServer]) { success in
-                    if success {
-                        Task { @MainActor in
-                            updateSettings(type: type)
-                        }
-                    }
-                    isUpdating = false
-                }
+        
             }
         case .none:
             updateSettings(type: type)
@@ -490,11 +436,6 @@ struct MenuBarView: View {
             settings.isQuad9Enabled = (type == .quad9)
             settings.isAdGuardEnabled = type == .adguard ? true : nil
             
-            if case .getflix(let location) = type {
-                settings.activeGetFlixLocation = location
-            } else {
-                settings.activeGetFlixLocation = nil
-            }
             
             if case .custom(let server) = type {
                 settings.activeCustomDNSID = server.id
