@@ -1,7 +1,5 @@
 # BarDNS
 
-[A fork of DNS Easy Switcher](https://github.com/glinford/dns-easy-switcher)
-
 A macOS menu bar app that allows you to quickly switch between different DNS providers (or add custom ones).
 
 ![Screenshot of BarDNS](screenshot.png)
@@ -95,6 +93,7 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## Acknowledgments
 
+- [Gregory Linford](https://github.com/glinford) for creating the original [DNS Easy Switcher](https://github.com/glinford/dns-easy-switcher), which BarDNS is forked from
 - [Cloudflare DNS](https://1.1.1.1) for their public DNS service
 - [Quad9](https://quad9.net) for their secure DNS service
 - [AdGuard DNS](https://adguard-dns.io/en/welcome.html) for their privacy-focused DNS service with ad blocking capabilities
