@@ -56,33 +56,21 @@ struct MenuBarView: View {
 
                 Divider()
 
-                if !customServers.isEmpty {
-                    Button(action: {
-                        showManageCustomDNSSheet()
-                    }) {
-                        Text("Manage Custom DNS")
-                            .frame(maxWidth: .infinity)
-                    }
-                    .buttonStyle(.plain)
-                    .padding(.horizontal)
-                    .padding(.vertical, 5)
-                    .disabled(isSpeedTesting)
-                }
-
-                Button(action: {
-                    showAddCustomDNSSheet()
-                }) {
-                    Text("Add Custom DNS")
-                        .frame(maxWidth: .infinity)
-                }
-                .buttonStyle(.bordered)
-                .padding(.horizontal)
-                .padding(.vertical, 5)
-                .disabled(isSpeedTesting)
-                
-                Divider()
-                
                 Menu {
+                    Button("Add Custom DNS") {
+                        showAddCustomDNSSheet()
+                    }
+                    .disabled(isSpeedTesting)
+
+                    if !customServers.isEmpty {
+                        Button("Manage Custom DNS") {
+                            showManageCustomDNSSheet()
+                        }
+                        .disabled(isSpeedTesting)
+                    }
+
+                    Divider()
+
                     Button("Disable DNS Override") {
                         if !isUpdating && !isSpeedTesting {
                             isUpdating = true
