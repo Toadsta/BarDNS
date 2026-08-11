@@ -19,7 +19,21 @@ struct MenuBarView: View {
     @State private var aboutWindowController: CustomSheetWindowController?
     @State private var selectedServer: CustomDNSServer?
     @State private var windowController: CustomSheetWindowController?
-    
+
+    private var isDefaultDNSActive: Bool {
+        guard let settings = dnsSettings.first else { return true }
+        return !settings.isCloudflareEnabled &&
+            !settings.isQuad9Enabled &&
+            !(settings.isAdGuardEnabled ?? false) &&
+            settings.activeCustomDNSID == nil
+    }
+
+    private var hasVisiblePresets: Bool {
+        (dnsSettings.first?.isCloudflareVisible ?? true) ||
+        (dnsSettings.first?.isQuad9Visible ?? true) ||
+        (dnsSettings.first?.isAdGuardVisible ?? true)
+    }
+
     var body: some View {
         Group {
             VStack {
@@ -32,59 +46,53 @@ struct MenuBarView: View {
                     )
                 }
 
-                if !customServers.isEmpty {
+                if !customServers.isEmpty && hasVisiblePresets {
+                    Divider()
+                }
+
+                if dnsSettings.first?.isCloudflareVisible ?? true {
+                    dnsToggleRow(
+                        label: getLabelWithPing("Cloudflare DNS", dnsType: .cloudflare),
+                        isOn: dnsSettings.first?.isCloudflareEnabled ?? false,
+                        action: { activateDNS(type: .cloudflare) }
+                    )
+                }
+
+                if dnsSettings.first?.isQuad9Visible ?? true {
+                    dnsToggleRow(
+                        label: getLabelWithPing("Quad9 DNS", dnsType: .quad9),
+                        isOn: dnsSettings.first?.isQuad9Enabled ?? false,
+                        action: { activateDNS(type: .quad9) }
+                    )
+                }
+
+                if dnsSettings.first?.isAdGuardVisible ?? true {
+                    dnsToggleRow(
+                        label: getLabelWithPing("AdGuard DNS", dnsType: .adguard),
+                        isOn: dnsSettings.first?.isAdGuardEnabled ?? false,
+                        action: { activateDNS(type: .adguard) }
+                    )
+                }
+
+                if !customServers.isEmpty || hasVisiblePresets {
                     Divider()
                 }
 
                 dnsToggleRow(
-                    label: getLabelWithPing("Cloudflare DNS", dnsType: .cloudflare),
-                    isOn: dnsSettings.first?.isCloudflareEnabled ?? false,
-                    action: { activateDNS(type: .cloudflare) }
-                )
-
-                dnsToggleRow(
-                    label: getLabelWithPing("Quad9 DNS", dnsType: .quad9),
-                    isOn: dnsSettings.first?.isQuad9Enabled ?? false,
-                    action: { activateDNS(type: .quad9) }
-                )
-
-                dnsToggleRow(
-                    label: getLabelWithPing("AdGuard DNS", dnsType: .adguard),
-                    isOn: dnsSettings.first?.isAdGuardEnabled ?? false,
-                    action: { activateDNS(type: .adguard) }
+                    label: "Default DNS",
+                    isOn: isDefaultDNSActive,
+                    action: { disableDNSOverride() }
                 )
 
                 Divider()
 
                 Menu {
-                    Button("Add Custom DNS") {
-                        showAddCustomDNSSheet()
+                    Button("Manage DNS") {
+                        showManageCustomDNSSheet()
                     }
                     .disabled(isSpeedTesting)
 
-                    if !customServers.isEmpty {
-                        Button("Manage Custom DNS") {
-                            showManageCustomDNSSheet()
-                        }
-                        .disabled(isSpeedTesting)
-                    }
-
                     Divider()
-
-                    Button("Disable DNS Override") {
-                        if !isUpdating && !isSpeedTesting {
-                            isUpdating = true
-                            DNSManager.shared.disableDNS { success in
-                                if success {
-                                    Task { @MainActor in
-                                        updateSettings(type: .none)
-                                    }
-                                }
-                                isUpdating = false
-                            }
-                        }
-                    }
-                    .disabled(isUpdating || isSpeedTesting)
 
                     Button(isSpeedTesting ? "Running Speed Test…" : "Run Speed Test") {
                         runSpeedTest()
@@ -191,6 +199,8 @@ struct MenuBarView: View {
     }
     
     private func showAddCustomDNSSheet() {
+        windowController?.close()
+
         let addView = AddCustomDNSView { newServer in
             if let newServer = newServer {
                 modelContext.insert(newServer)
@@ -219,41 +229,75 @@ struct MenuBarView: View {
     }
     
     private func showManageCustomDNSSheet() {
-        let manageView = CustomDNSManagerView(customServers: customServers, onAction: { action, server in
-            switch action {
-            case .edit:
-                editCustomDNS(server)
-            case .delete:
-                modelContext.delete(server)
-                try? modelContext.save()
-                
-                // If this was the active server, disable DNS
-                if dnsSettings.first?.activeCustomDNSID == server.id {
-                    isUpdating = true
-                    DNSManager.shared.disableDNS { success in
-                        if success {
-                            Task { @MainActor in
-                                updateSettings(type: .none)
-                            }
-                        }
-                        isUpdating = false
+        let manageView = CustomDNSManagerView(
+            customServers: customServers,
+            isCloudflareVisible: Binding(
+                get: { dnsSettings.first?.isCloudflareVisible ?? true },
+                set: { newValue in
+                    if let settings = dnsSettings.first {
+                        settings.isCloudflareVisible = newValue
+                        try? modelContext.save()
                     }
                 }
-            case .use:
-                activateDNS(type: .custom(server))
-            }
-            
-            // Don't close the window for .use or .edit actions
-            if action == .delete {
+            ),
+            isQuad9Visible: Binding(
+                get: { dnsSettings.first?.isQuad9Visible ?? true },
+                set: { newValue in
+                    if let settings = dnsSettings.first {
+                        settings.isQuad9Visible = newValue
+                        try? modelContext.save()
+                    }
+                }
+            ),
+            isAdGuardVisible: Binding(
+                get: { dnsSettings.first?.isAdGuardVisible ?? true },
+                set: { newValue in
+                    if let settings = dnsSettings.first {
+                        settings.isAdGuardVisible = newValue
+                        try? modelContext.save()
+                    }
+                }
+            ),
+            onAction: { action, server in
+                switch action {
+                case .edit:
+                    editCustomDNS(server)
+                case .delete:
+                    modelContext.delete(server)
+                    try? modelContext.save()
+
+                    // If this was the active server, disable DNS
+                    if dnsSettings.first?.activeCustomDNSID == server.id {
+                        isUpdating = true
+                        DNSManager.shared.disableDNS { success in
+                            if success {
+                                Task { @MainActor in
+                                    updateSettings(type: .none)
+                                }
+                            }
+                            isUpdating = false
+                        }
+                    }
+                case .use:
+                    activateDNS(type: .custom(server))
+                }
+
+                // Don't close the window for .use or .edit actions
+                if action == .delete {
+                    windowController?.close()
+                    windowController = nil
+                }
+            },
+            onAdd: {
+                showAddCustomDNSSheet()
+            },
+            onClose: {
                 windowController?.close()
                 windowController = nil
             }
-        }, onClose: {
-            windowController?.close()
-            windowController = nil
-        })
-        
-        windowController = CustomSheetWindowController(view: manageView, title: "Manage Custom DNS")
+        )
+
+        windowController = CustomSheetWindowController(view: manageView, title: "Manage DNS")
         windowController?.window?.level = .floating
         windowController?.showWindow(nil)
         
@@ -393,7 +437,20 @@ struct MenuBarView: View {
             isUpdating = false
         }
     }
-    
+
+    private func disableDNSOverride() {
+        guard !isUpdating && !isSpeedTesting else { return }
+        isUpdating = true
+        DNSManager.shared.disableDNS { success in
+            if success {
+                Task { @MainActor in
+                    updateSettings(type: .none)
+                }
+            }
+            isUpdating = false
+        }
+    }
+
     private func updateSettings(type: DNSType) {
         if let settings = dnsSettings.first {
             settings.isCloudflareEnabled = (type == .cloudflare)

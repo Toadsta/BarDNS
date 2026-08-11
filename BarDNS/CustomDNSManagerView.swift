@@ -13,15 +13,34 @@ enum CustomDNSAction {
 
 struct CustomDNSManagerView: View {
     let customServers: [CustomDNSServer]
+    @Binding var isCloudflareVisible: Bool
+    @Binding var isQuad9Visible: Bool
+    @Binding var isAdGuardVisible: Bool
     let onAction: (CustomDNSAction, CustomDNSServer) -> Void
+    let onAdd: () -> Void
     let onClose: () -> Void
-    
+
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("Manage Custom DNS")
+            Text("Manage DNS")
                 .font(.headline)
                 .padding(.bottom, 4)
-            
+
+            Text("Preset Providers")
+                .font(.subheadline)
+                .foregroundColor(.secondary)
+
+            Toggle("Cloudflare DNS", isOn: $isCloudflareVisible)
+            Toggle("Quad9 DNS", isOn: $isQuad9Visible)
+            Toggle("AdGuard DNS", isOn: $isAdGuardVisible)
+
+            Divider()
+                .padding(.vertical, 4)
+
+            Text("Custom DNS")
+                .font(.subheadline)
+                .foregroundColor(.secondary)
+
             if customServers.isEmpty {
                 Text("No custom DNS servers added")
                     .foregroundColor(.secondary)
@@ -32,9 +51,9 @@ struct CustomDNSManagerView: View {
                         HStack {
                             Text(server.name)
                                 .lineLimit(1)
-                            
+
                             Spacer()
-                            
+
                             Button(action: {
                                 onAction(.edit, server)
                             }) {
@@ -44,7 +63,7 @@ struct CustomDNSManagerView: View {
                             .buttonStyle(.plain)
                             .help("Edit this DNS")
                             .padding(.trailing, 8)
-                            
+
                             Button(action: {
                                 onAction(.delete, server)
                             }) {
@@ -61,7 +80,14 @@ struct CustomDNSManagerView: View {
                 .frame(minHeight: 100, maxHeight: 200)
                 .listStyle(.plain)
             }
-            
+
+            Button(action: onAdd) {
+                Text("Add Custom DNS")
+                    .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.bordered)
+            .padding(.top, 4)
+
             HStack {
                 Spacer()
                 Button("Close") {
