@@ -1,6 +1,6 @@
 //
 //  DNSSettings.swift
-//  DNS Easy Switcher
+//  BarDNS
 //
 //  Created by Gregory LINFORD on 23/02/2025.
 //
@@ -42,16 +42,14 @@ final class DNSSettings {
     var isQuad9Enabled: Bool
     var activeCustomDNSID: String?
     var timestamp: Date
-    var activeGetFlixLocation: String?
     var isAdGuardEnabled: Bool?
-    
+
     init(id: String = UUID().uuidString,
          isCloudflareEnabled: Bool = false,
          isQuad9Enabled: Bool = false,
          activeCustomDNSID: String? = nil,
          timestamp: Date = Date(),
-         isAdGuardEnabled: Bool? = false,
-         activeGetFlixLocation: String? = nil) {
+         isAdGuardEnabled: Bool? = false) {
         self.id = id
         self.isCloudflareEnabled = isCloudflareEnabled
         self.isQuad9Enabled = isQuad9Enabled
