@@ -2,7 +2,8 @@
 //  EditCustomDNSView.swift
 //  BarDNS
 //
-//  Created by Gregory LINFORD on 25/02/2025.
+//  Created by Victoria Taylor.
+//  Based on DNS Easy Switcher by Gregory Linford.
 //
 
 import SwiftUI
