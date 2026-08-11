@@ -1,10 +1,12 @@
 # BarDNS
+
 [A fork of DNS Easy Switcher](https://github.com/glinford/dns-easy-switcher)
-A macOS menu bar app that allows you to switch between different DNS providers or add custom ones DNS you provide.
 
-![Screenshot of DNS Easy Switcher](screenshot.png)
+A macOS menu bar app that allows you to quickly switch between different DNS providers (or add custom ones).
 
-![downloads](https://img.shields.io/github/downloads/glinford/dns-easy-switcher/total)
+![Screenshot of BarDNS](screenshot.png)
+
+![downloads](https://img.shields.io/github/downloads/Toadsta/BarDNS/total)
 
 ## Features
 
@@ -23,38 +25,38 @@ A macOS menu bar app that allows you to switch between different DNS providers o
 
 ## Installation
 
-### Using Homebrew (Recommended)
-
-Install DNS Easy Switcher with Homebrew using these commands:
+### Using Homebrew
 
 ```bash
-brew tap glinford/tap
-brew install --cask dns-easy-switcher
+brew tap Toadsta/tap
+brew trust Toadsta/tap
+brew install --cask bardns
 ```
 
-To update to the latest version when available:
+The `brew trust` step is required the first time, since this is a third-party tap. To update to the latest version when available:
 
 ```bash
-brew upgrade --cask dns-easy-switcher
+brew upgrade --cask bardns
 ```
 
 ### Manual Installation
 
 1. Download the latest release from the [Releases](../../releases) page
 2. Mount the DMG file
-3. Drag DNS Easy Switcher to your Applications folder
-4. Launch DNS Easy Switcher from Applications
+3. Drag BarDNS to your Applications folder
+4. Launch BarDNS from Applications
 
 ## First Launch
 
-Since DNS Easy Switcher is distributed outside the Mac App Store, macOS may show a security warning when you first launch it.
+Since BarDNS is distributed outside the Mac App Store, macOS may show a security warning when you first launch it.
 
-To allow the app to run:
+BarDNS is currently ad-hoc signed only (not notarized by Apple), so the warning may be more restrictive than for a notarized app. To allow it to run:
 
-1. Right-click (or Control-click) on DNS Easy Switcher in your Applications folder
+1. Right-click (or Control-click) on BarDNS in your Applications folder
 2. Select "Open" from the context menu
 3. Click "Open" in the dialog that appears
-4. Allow system extensions when prompted (required for DNS changes)
+4. If macOS still blocks it, go to System Settings > Privacy & Security and click "Open Anyway", then confirm
+5. Allow system extensions when prompted (required for DNS changes)
 
 ![settings](settings.png)
 
@@ -96,8 +98,7 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 - [Cloudflare DNS](https://1.1.1.1) for their public DNS service
 - [Quad9](https://quad9.net) for their secure DNS service
 - [AdGuard DNS](https://adguard-dns.io/en/welcome.html) for their privacy-focused DNS service with ad blocking capabilities
-- [GetFlix](https://www.getflix.com.au/setup/dns-servers/)
 
 ## Privacy
 
-DNS Easy Switcher does not collect any data. All settings are stored locally on your device.
+BarDNS does not collect any data. All settings are stored locally on your device.

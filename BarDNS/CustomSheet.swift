@@ -1,6 +1,6 @@
 //
 //  CustomSheet.swift
-//  DNS Easy Switcher
+//  BarDNS
 //
 //  Created by Gregory LINFORD on 23/02/2025.
 //

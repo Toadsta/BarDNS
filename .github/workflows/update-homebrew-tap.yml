@@ -1,0 +1,51 @@
+name: Update Homebrew Tap
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag to publish to the tap (e.g. v1.0.1)"
+        required: true
+
+jobs:
+  update-tap:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Resolve tag and version
+        id: meta
+        run: |
+          tag="${{ github.event.inputs.tag || github.ref_name }}"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          echo "version=${tag#v}" >> "$GITHUB_OUTPUT"
+
+      - name: Download release DMG
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release download "${{ steps.meta.outputs.tag }}" \
+            --repo "${{ github.repository }}" \
+            --pattern "BarDNS.dmg"
+
+      - name: Compute checksum
+        id: sha
+        run: echo "sha256=$(sha256sum BarDNS.dmg | cut -d' ' -f1)" >> "$GITHUB_OUTPUT"
+
+      - name: Update tap
+        env:
+          TAP_DEPLOY_TOKEN: ${{ secrets.TAP_DEPLOY_TOKEN }}
+        run: |
+          git clone "https://x-access-token:${TAP_DEPLOY_TOKEN}@github.com/Toadsta/homebrew-tap.git" tap
+          cd tap
+          sed -i "s/version \".*\"/version \"${{ steps.meta.outputs.version }}\"/" Casks/bardns.rb
+          sed -i "s/sha256 \".*\"/sha256 \"${{ steps.sha.outputs.sha256 }}\"/" Casks/bardns.rb
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          if git diff --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
+          git add Casks/bardns.rb
+          git commit -m "bardns ${{ steps.meta.outputs.version }}"
+          git push
