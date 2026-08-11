@@ -82,61 +82,37 @@ struct MenuBarView: View {
                 
                 Divider()
                 
-                Button("Disable DNS Override") {
-                    if !isUpdating && !isSpeedTesting {
-                        isUpdating = true
-                        DNSManager.shared.disableDNS { success in
-                            if success {
-                                Task { @MainActor in
-                                    updateSettings(type: .none)
+                Menu {
+                    Button("Disable DNS Override") {
+                        if !isUpdating && !isSpeedTesting {
+                            isUpdating = true
+                            DNSManager.shared.disableDNS { success in
+                                if success {
+                                    Task { @MainActor in
+                                        updateSettings(type: .none)
+                                    }
                                 }
+                                isUpdating = false
                             }
-                            isUpdating = false
                         }
                     }
-                }
-                .padding(.vertical, 5)
-                .disabled(isUpdating || isSpeedTesting)
-                
-                // Speed Test Button
-                Button(action: {
-                    runSpeedTest()
-                }) {
-                    HStack {
-                        Text("Run Speed Test")
-                        if isSpeedTesting {
-                            Spacer()
-                            ProgressView()
-                                .scaleEffect(0.8)
-                                .frame(width: 16, height: 16)
-                        }
+                    .disabled(isUpdating || isSpeedTesting)
+
+                    Button(isSpeedTesting ? "Running Speed Test…" : "Run Speed Test") {
+                        runSpeedTest()
                     }
-                    .frame(maxWidth: .infinity)
+                    .disabled(isUpdating || isSpeedTesting)
+
+                    Button(isUpdating ? "Clearing DNS Cache…" : "Clear DNS Cache") {
+                        clearDNSCache()
+                    }
+                    .disabled(isUpdating || isSpeedTesting)
+                } label: {
+                    Text("Settings")
                 }
-                .buttonStyle(.bordered)
                 .padding(.horizontal)
-                .padding(.vertical, 5)
-                .disabled(isUpdating || isSpeedTesting)
-                
-                Button(action: {
-                    clearDNSCache()
-                }) {
-                    HStack {
-                        Text("Clear DNS Cache")
-                        if isUpdating {
-                            Spacer()
-                            ProgressView()
-                                .scaleEffect(0.8)
-                                .frame(width: 16, height: 16)
-                        }
-                    }
-                    .frame(maxWidth: .infinity)
-                }
-                .buttonStyle(.bordered)
-                .padding(.horizontal)
-                .padding(.vertical, 5)
-                .disabled(isUpdating || isSpeedTesting)
-                
+                .disabled(isSpeedTesting)
+
                 Divider()
 
                 Button("About") {
