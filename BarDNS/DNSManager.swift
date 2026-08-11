@@ -2,7 +2,8 @@
 //  DNSManager.swift
 //  BarDNS
 //
-//  Created by Gregory LINFORD on 23/02/2025.
+//  Created by Victoria Taylor.
+//  Based on DNS Easy Switcher by Gregory Linford.
 //
 
 import Foundation
