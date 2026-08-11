@@ -140,11 +140,48 @@ class DNSSpeedTester {
         cancelTests()
     }
     
+    // Strips any port suffix and detects IPv6, since ping only understands bare addresses
+    // and IPv6 requires ping6 on macOS.
+    private func resolvePingTarget(_ server: String) -> (host: String, isIPv6: Bool) {
+        let address = server.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        // Bracketed IPv6 with optional port, e.g. [2001:db8::1]:53
+        if address.hasPrefix("["), let closingBracket = address.firstIndex(of: "]") {
+            let host = String(address[address.index(after: address.startIndex)..<closingBracket])
+            return (host, true)
+        }
+
+        let colonCount = address.filter { $0 == ":" }.count
+
+        // IPv4 with port, e.g. 127.0.0.1:5353 (single colon, numeric suffix)
+        if colonCount == 1, let colonIndex = address.firstIndex(of: ":") {
+            let host = String(address[address.startIndex..<colonIndex])
+            let port = address[address.index(after: colonIndex)...]
+            if Int(port) != nil {
+                return (host, false)
+            }
+        }
+
+        // Plain IPv6 (multiple colons, no brackets)
+        if colonCount > 1 {
+            return (address, true)
+        }
+
+        return (address, false)
+    }
+
     // Measure ping time to a DNS server with safer implementation
     private func pingServer(server: String, completion: @escaping (Double, Bool) -> Void) {
+        let (host, isIPv6) = resolvePingTarget(server)
+
         let task = Process()
-        task.launchPath = "/sbin/ping"
-        task.arguments = ["-c", "2", "-t", "1", server] // 2 pings with 1-second timeout (reduced for speed)
+        if isIPv6 {
+            task.launchPath = "/sbin/ping6"
+            task.arguments = ["-c", "2", host] // ping6 has no -t timeout flag
+        } else {
+            task.launchPath = "/sbin/ping"
+            task.arguments = ["-c", "2", "-t", "2", host] // 2 pings, 2-second timeout
+        }
         
         let pipe = Pipe()
         task.standardOutput = pipe
@@ -164,7 +201,7 @@ class DNSSpeedTester {
             
             let data = pipe.fileHandleForReading.readDataToEndOfFile()
             let output = String(data: data, encoding: .utf8) ?? ""
-            
+
             // Parse ping results
             if process.terminationStatus == 0 && output.contains("min/avg/max") {
                 // More robust parsing approach
