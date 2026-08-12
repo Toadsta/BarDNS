@@ -65,3 +65,9 @@ fastlane/test_output
 
 # Local archive/DMG build output
 build/
+
+# Test coverage artifacts
+*.profraw
+
+# Local Claude Code agent config (not part of the app)
+.claude/

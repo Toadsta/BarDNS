@@ -7,26 +7,40 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		5356A801B6B590AC0B261537 /* DNSManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B7BFB925C787746FF8D0078 /* DNSManagerTests.swift */; };
 		55BCC425302B53D6003A14EB /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 55BCC424302B53D6003A14EB /* README.md */; };
 		55BCC426302B53D6003A14EB /* LICENSE in Resources */ = {isa = PBXBuildFile; fileRef = 55BCC423302B53D6003A14EB /* LICENSE */; };
+		6E67031045D951C26B438710 /* DNSSpeedTesterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 401387C3A26F4EEFA1AD52AD /* DNSSpeedTesterTests.swift */; };
 		9165B6682D6B616D00DD9643 /* BarDNS.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9165B6672D6B616D00DD9643 /* BarDNS.swift */; };
 		9165B66A2D6B616D00DD9643 /* MenuBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9165B6692D6B616D00DD9643 /* MenuBarView.swift */; };
 		9165B66C2D6B616D00DD9643 /* DNSSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9165B66B2D6B616D00DD9643 /* DNSSettings.swift */; };
 		9165B66E2D6B616D00DD9643 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9165B66D2D6B616D00DD9643 /* Assets.xcassets */; };
 		9165B6712D6B616D00DD9643 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9165B6702D6B616D00DD9643 /* Preview Assets.xcassets */; };
-		9165B6792D6B61C500DD9643 /* MenuBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9165B6782D6B61C500DD9643 /* MenuBarController.swift */; };
 		9165B67B2D6B62CC00DD9643 /* DNSManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9165B67A2D6B62CC00DD9643 /* DNSManager.swift */; };
-		9165B67D2D6B699A00DD9643 /* AddCustomDNSView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9165B67C2D6B699A00DD9643 /* AddCustomDNSView.swift */; };
-		9165B67F2D6B6D1800DD9643 /* CustomSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9165B67E2D6B6D1800DD9643 /* CustomSheet.swift */; };
-		91FFB82B2D6E6619008C0471 /* CustomDNSManagerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 91FFB82A2D6E6619008C0471 /* CustomDNSManagerView.swift */; };
-		91FFB82D2D6E6639008C0471 /* EditCustomDNSView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 91FFB82C2D6E6639008C0471 /* EditCustomDNSView.swift */; };
 		91FFB82F2D6E6868008C0471 /* DNSSpeedTester.swift in Sources */ = {isa = PBXBuildFile; fileRef = 91FFB82E2D6E6868008C0471 /* DNSSpeedTester.swift */; };
-		91FFB9002D70E000008C0471 /* AboutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 91FFB8FF2D70E000008C0471 /* AboutView.swift */; };
+		AA11000000000000000A0001 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA11000000000000000A0002 /* SettingsView.swift */; };
+		AA11000000000000000A0003 /* CustomDNSEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA11000000000000000A0004 /* CustomDNSEditorView.swift */; };
+		EF69B7B3BB4D8DAF391DCF8F /* CustomDNSServerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B9AC3729D0930AF7910CAF3 /* CustomDNSServerTests.swift */; };
+		F65FE2D362B01700265909D7 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4E599046F4C3BC30A03FBA1B /* Cocoa.framework */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		EBB24D28B5CE342F18844BF6 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 9165B65C2D6B616D00DD9643 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 9165B6632D6B616D00DD9643;
+			remoteInfo = BarDNS;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
+		401387C3A26F4EEFA1AD52AD /* DNSSpeedTesterTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DNSSpeedTesterTests.swift; sourceTree = "<group>"; };
+		4B7BFB925C787746FF8D0078 /* DNSManagerTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DNSManagerTests.swift; sourceTree = "<group>"; };
+		4E599046F4C3BC30A03FBA1B /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.0.sdk/System/Library/Frameworks/Cocoa.framework; sourceTree = DEVELOPER_DIR; };
 		55BCC423302B53D6003A14EB /* LICENSE */ = {isa = PBXFileReference; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
 		55BCC424302B53D6003A14EB /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
+		8B9AC3729D0930AF7910CAF3 /* CustomDNSServerTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CustomDNSServerTests.swift; sourceTree = "<group>"; };
 		9165B6642D6B616D00DD9643 /* BarDNS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BarDNS.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		9165B6672D6B616D00DD9643 /* BarDNS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BarDNS.swift; sourceTree = "<group>"; };
 		9165B6692D6B616D00DD9643 /* MenuBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarView.swift; sourceTree = "<group>"; };
@@ -34,14 +48,11 @@
 		9165B66D2D6B616D00DD9643 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		9165B6702D6B616D00DD9643 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		9165B6722D6B616D00DD9643 /* BarDNS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = BarDNS.entitlements; sourceTree = "<group>"; };
-		9165B6782D6B61C500DD9643 /* MenuBarController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarController.swift; sourceTree = "<group>"; };
 		9165B67A2D6B62CC00DD9643 /* DNSManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DNSManager.swift; sourceTree = "<group>"; };
-		9165B67C2D6B699A00DD9643 /* AddCustomDNSView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddCustomDNSView.swift; sourceTree = "<group>"; };
-		9165B67E2D6B6D1800DD9643 /* CustomSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomSheet.swift; sourceTree = "<group>"; };
-		91FFB82A2D6E6619008C0471 /* CustomDNSManagerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomDNSManagerView.swift; sourceTree = "<group>"; };
-		91FFB82C2D6E6639008C0471 /* EditCustomDNSView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditCustomDNSView.swift; sourceTree = "<group>"; };
 		91FFB82E2D6E6868008C0471 /* DNSSpeedTester.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DNSSpeedTester.swift; sourceTree = "<group>"; };
-		91FFB8FF2D70E000008C0471 /* AboutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AboutView.swift; sourceTree = "<group>"; };
+		AA11000000000000000A0002 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		AA11000000000000000A0004 /* CustomDNSEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomDNSEditorView.swift; sourceTree = "<group>"; };
+		FB0E7EC381FF50D850CF53F3 /* BarDNSTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BarDNSTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -52,9 +63,44 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		BFEE2E8401A418091F2438C5 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F65FE2D362B01700265909D7 /* Cocoa.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		13F46521E3D4763382480665 /* BarDNSTests */ = {
+			isa = PBXGroup;
+			children = (
+				4B7BFB925C787746FF8D0078 /* DNSManagerTests.swift */,
+				401387C3A26F4EEFA1AD52AD /* DNSSpeedTesterTests.swift */,
+				8B9AC3729D0930AF7910CAF3 /* CustomDNSServerTests.swift */,
+			);
+			name = BarDNSTests;
+			path = BarDNSTests;
+			sourceTree = "<group>";
+		};
+		30EA9C3ED9CAB1C38A8D9CF8 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				836E5976D8339569B11C0495 /* OS X */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		836E5976D8339569B11C0495 /* OS X */ = {
+			isa = PBXGroup;
+			children = (
+				4E599046F4C3BC30A03FBA1B /* Cocoa.framework */,
+			);
+			name = "OS X";
+			sourceTree = "<group>";
+		};
 		9165B65B2D6B616D00DD9643 = {
 			isa = PBXGroup;
 			children = (
@@ -62,6 +108,8 @@
 				55BCC424302B53D6003A14EB /* README.md */,
 				9165B6662D6B616D00DD9643 /* BarDNS */,
 				9165B6652D6B616D00DD9643 /* Products */,
+				30EA9C3ED9CAB1C38A8D9CF8 /* Frameworks */,
+				13F46521E3D4763382480665 /* BarDNSTests */,
 			);
 			sourceTree = "<group>";
 		};
@@ -69,6 +117,7 @@
 			isa = PBXGroup;
 			children = (
 				9165B6642D6B616D00DD9643 /* BarDNS.app */,
+				FB0E7EC381FF50D850CF53F3 /* BarDNSTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -82,14 +131,10 @@
 				9165B66D2D6B616D00DD9643 /* Assets.xcassets */,
 				9165B6722D6B616D00DD9643 /* BarDNS.entitlements */,
 				9165B66F2D6B616D00DD9643 /* Preview Content */,
-				9165B6782D6B61C500DD9643 /* MenuBarController.swift */,
 				9165B67A2D6B62CC00DD9643 /* DNSManager.swift */,
-				9165B67C2D6B699A00DD9643 /* AddCustomDNSView.swift */,
-				9165B67E2D6B6D1800DD9643 /* CustomSheet.swift */,
-				91FFB82A2D6E6619008C0471 /* CustomDNSManagerView.swift */,
-				91FFB82C2D6E6639008C0471 /* EditCustomDNSView.swift */,
 				91FFB82E2D6E6868008C0471 /* DNSSpeedTester.swift */,
-				91FFB8FF2D70E000008C0471 /* AboutView.swift */,
+				AA11000000000000000A0002 /* SettingsView.swift */,
+				AA11000000000000000A0004 /* CustomDNSEditorView.swift */,
 			);
 			path = BarDNS;
 			sourceTree = "<group>";
@@ -105,6 +150,24 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		083429F07B80783F03D03D0A /* BarDNSTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = DD32172988FDBF43EFD5B54D /* Build configuration list for PBXNativeTarget "BarDNSTests" */;
+			buildPhases = (
+				CBD8E4151449B8C6BB02046E /* Sources */,
+				BFEE2E8401A418091F2438C5 /* Frameworks */,
+				A80B6A978719D8C145BECF56 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				8D175D3B20E3943C7777EEEA /* PBXTargetDependency */,
+			);
+			name = BarDNSTests;
+			productName = BarDNSTests;
+			productReference = FB0E7EC381FF50D850CF53F3 /* BarDNSTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 		9165B6632D6B616D00DD9643 /* BarDNS */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 9165B6752D6B616D00DD9643 /* Build configuration list for PBXNativeTarget "BarDNS" */;
@@ -151,6 +214,7 @@
 			projectRoot = "";
 			targets = (
 				9165B6632D6B616D00DD9643 /* BarDNS */,
+				083429F07B80783F03D03D0A /* BarDNSTests */,
 			);
 		};
 /* End PBXProject section */
@@ -167,6 +231,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		A80B6A978719D8C145BECF56 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -174,23 +245,61 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				9165B6792D6B61C500DD9643 /* MenuBarController.swift in Sources */,
-				9165B67F2D6B6D1800DD9643 /* CustomSheet.swift in Sources */,
-				9165B67D2D6B699A00DD9643 /* AddCustomDNSView.swift in Sources */,
 				9165B66A2D6B616D00DD9643 /* MenuBarView.swift in Sources */,
-				91FFB82B2D6E6619008C0471 /* CustomDNSManagerView.swift in Sources */,
 				9165B66C2D6B616D00DD9643 /* DNSSettings.swift in Sources */,
 				91FFB82F2D6E6868008C0471 /* DNSSpeedTester.swift in Sources */,
 				9165B67B2D6B62CC00DD9643 /* DNSManager.swift in Sources */,
-				91FFB82D2D6E6639008C0471 /* EditCustomDNSView.swift in Sources */,
-				91FFB9002D70E000008C0471 /* AboutView.swift in Sources */,
+				AA11000000000000000A0001 /* SettingsView.swift in Sources */,
+				AA11000000000000000A0003 /* CustomDNSEditorView.swift in Sources */,
 				9165B6682D6B616D00DD9643 /* BarDNS.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		CBD8E4151449B8C6BB02046E /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5356A801B6B590AC0B261537 /* DNSManagerTests.swift in Sources */,
+				6E67031045D951C26B438710 /* DNSSpeedTesterTests.swift in Sources */,
+				EF69B7B3BB4D8DAF391DCF8F /* CustomDNSServerTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		8D175D3B20E3943C7777EEEA /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = BarDNS;
+			target = 9165B6632D6B616D00DD9643 /* BarDNS */;
+			targetProxy = EBB24D28B5CE342F18844BF6 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin XCBuildConfiguration section */
+		37A3ABEAC2E8D79FBE4BA932 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_IDENTITY = "-";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = A62LGK8CNX;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.toadsie.BarDNSTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/BarDNS.app/Contents/MacOS/BarDNS";
+			};
+			name = Debug;
+		};
 		9165B6732D6B616D00DD9643 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -326,7 +435,7 @@
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 3;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"BarDNS/Preview Content\"";
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -334,13 +443,14 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = BarDNS;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
+				INFOPLIST_KEY_LSUIElement = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = "$(RECOMMENDED_MACOSX_DEPLOYMENT_TARGET)";
-				MARKETING_VERSION = 1.0.1;
+				MARKETING_VERSION = 1.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.toadsie.BarDNS;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -360,7 +470,7 @@
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 3;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"BarDNS/Preview Content\"";
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -368,18 +478,42 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = BarDNS;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
+				INFOPLIST_KEY_LSUIElement = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = "$(RECOMMENDED_MACOSX_DEPLOYMENT_TARGET)";
-				MARKETING_VERSION = 1.0.1;
+				MARKETING_VERSION = 1.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.toadsie.BarDNS;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		A27D5DFC4612C4395144869A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_IDENTITY = "-";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = A62LGK8CNX;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.toadsie.BarDNSTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/BarDNS.app/Contents/MacOS/BarDNS";
 			};
 			name = Release;
 		};
@@ -400,6 +534,15 @@
 			buildConfigurations = (
 				9165B6762D6B616D00DD9643 /* Debug */,
 				9165B6772D6B616D00DD9643 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		DD32172988FDBF43EFD5B54D /* Build configuration list for PBXNativeTarget "BarDNSTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A27D5DFC4612C4395144869A /* Release */,
+				37A3ABEAC2E8D79FBE4BA932 /* Debug */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
