@@ -54,5 +54,11 @@ struct BarDNS: App {
                 .environment(\.modelContext, modelContainer.mainContext)
                 .frame(width: 300)
         }
+
+        Window("BarDNS Settings", id: "settings") {
+            SettingsView()
+                .environment(\.modelContext, modelContainer.mainContext)
+        }
+        .windowResizability(.contentSize)
     }
 }
