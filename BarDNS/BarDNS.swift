@@ -12,8 +12,6 @@ import AppKit
 
 @main
 struct BarDNS: App {
-    @StateObject private var menuBarController = MenuBarController()
-    
     let modelContainer: ModelContainer
     
     init() {
@@ -57,8 +55,8 @@ struct BarDNS: App {
 
         Window("BarDNS Settings", id: "settings") {
             SettingsView()
-                .environment(\.modelContext, modelContainer.mainContext)
         }
+        .modelContainer(modelContainer)
         .windowResizability(.contentSize)
     }
 }

@@ -29,7 +29,7 @@ struct SettingsView: View {
             case .general: return "gearshape.fill"
             case .dnsProviders: return "network"
             case .advanced: return "wrench.and.screwdriver.fill"
-            case .about: return "info"
+            case .about: return "info.circle.fill"
             }
         }
 
@@ -82,6 +82,7 @@ struct SettingsView: View {
 private struct GeneralSettingsView: View {
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \DNSSettings.timestamp) private var dnsSettings: [DNSSettings]
+    @Query(sort: \CustomDNSServer.name) private var customServers: [CustomDNSServer]
     @State private var isUpdating = false
 
     private var activeDescription: String {
@@ -89,7 +90,10 @@ private struct GeneralSettingsView: View {
         if settings.isCloudflareEnabled { return "Cloudflare DNS" }
         if settings.isQuad9Enabled { return "Quad9 DNS" }
         if settings.isAdGuardEnabled ?? false { return "AdGuard DNS" }
-        if settings.activeCustomDNSID != nil { return "Custom DNS" }
+        if let activeID = settings.activeCustomDNSID,
+           let server = customServers.first(where: { $0.id == activeID }) {
+            return server.name
+        }
         return "Default DNS"
     }
 
@@ -155,6 +159,7 @@ private struct DNSProvidersSettingsView: View {
     @State private var isAddingNew = false
     @State private var editingServer: CustomDNSServer?
     @State private var pendingDelete: CustomDNSServer?
+    @State private var showUpdateFailedAlert = false
 
     var body: some View {
         Form {
@@ -241,7 +246,13 @@ private struct DNSProvidersSettingsView: View {
 
                 // If this server is currently active, push the updated addresses live
                 if dnsSettings.first?.activeCustomDNSID == server.id {
-                    DNSManager.shared.setCustomDNS(servers: server.dnsEntries) { _ in }
+                    DNSManager.shared.setCustomDNS(servers: server.dnsEntries) { success in
+                        if !success {
+                            Task { @MainActor in
+                                showUpdateFailedAlert = true
+                            }
+                        }
+                    }
                 }
                 editingServer = nil
             } onCancel: {
@@ -264,6 +275,11 @@ private struct DNSProvidersSettingsView: View {
             }
         } message: {
             Text("This removes the selected DNS entry from your list.")
+        }
+        .alert("Couldn't Update DNS", isPresented: $showUpdateFailedAlert) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text("The saved changes didn't take effect on your Mac's network settings. Try again from DNS Providers.")
         }
     }
 

@@ -14,7 +14,6 @@
 		9165B66C2D6B616D00DD9643 /* DNSSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9165B66B2D6B616D00DD9643 /* DNSSettings.swift */; };
 		9165B66E2D6B616D00DD9643 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9165B66D2D6B616D00DD9643 /* Assets.xcassets */; };
 		9165B6712D6B616D00DD9643 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9165B6702D6B616D00DD9643 /* Preview Assets.xcassets */; };
-		9165B6792D6B61C500DD9643 /* MenuBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9165B6782D6B61C500DD9643 /* MenuBarController.swift */; };
 		9165B67B2D6B62CC00DD9643 /* DNSManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9165B67A2D6B62CC00DD9643 /* DNSManager.swift */; };
 		91FFB82F2D6E6868008C0471 /* DNSSpeedTester.swift in Sources */ = {isa = PBXBuildFile; fileRef = 91FFB82E2D6E6868008C0471 /* DNSSpeedTester.swift */; };
 		AA11000000000000000A0001 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA11000000000000000A0002 /* SettingsView.swift */; };
@@ -31,7 +30,6 @@
 		9165B66D2D6B616D00DD9643 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		9165B6702D6B616D00DD9643 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		9165B6722D6B616D00DD9643 /* BarDNS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = BarDNS.entitlements; sourceTree = "<group>"; };
-		9165B6782D6B61C500DD9643 /* MenuBarController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarController.swift; sourceTree = "<group>"; };
 		9165B67A2D6B62CC00DD9643 /* DNSManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DNSManager.swift; sourceTree = "<group>"; };
 		91FFB82E2D6E6868008C0471 /* DNSSpeedTester.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DNSSpeedTester.swift; sourceTree = "<group>"; };
 		AA11000000000000000A0002 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
@@ -76,7 +74,6 @@
 				9165B66D2D6B616D00DD9643 /* Assets.xcassets */,
 				9165B6722D6B616D00DD9643 /* BarDNS.entitlements */,
 				9165B66F2D6B616D00DD9643 /* Preview Content */,
-				9165B6782D6B61C500DD9643 /* MenuBarController.swift */,
 				9165B67A2D6B62CC00DD9643 /* DNSManager.swift */,
 				91FFB82E2D6E6868008C0471 /* DNSSpeedTester.swift */,
 				AA11000000000000000A0002 /* SettingsView.swift */,
@@ -165,7 +162,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				9165B6792D6B61C500DD9643 /* MenuBarController.swift in Sources */,
 				9165B66A2D6B616D00DD9643 /* MenuBarView.swift in Sources */,
 				9165B66C2D6B616D00DD9643 /* DNSSettings.swift in Sources */,
 				91FFB82F2D6E6868008C0471 /* DNSSpeedTester.swift in Sources */,
@@ -322,6 +318,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = BarDNS;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
+					INFOPLIST_KEY_LSUIElement = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -356,6 +353,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = BarDNS;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
+					INFOPLIST_KEY_LSUIElement = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
