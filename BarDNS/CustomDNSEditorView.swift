@@ -30,6 +30,18 @@ struct CustomDNSEditorView: View {
         _quaternaryDNS = State(initialValue: server?.quaternaryDNS ?? "")
     }
 
+    private func entries(from field: String) -> [String] {
+        field.split(separator: ",")
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { !$0.isEmpty }
+    }
+
+    private var invalidEntries: [String] {
+        let allEntries = entries(from: primaryDNS) + entries(from: secondaryDNS) +
+            entries(from: tertiaryDNS) + entries(from: quaternaryDNS)
+        return allEntries.filter { DNSManager.shared.parseDNSServer($0) == nil }
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text(server == nil ? "Add Custom DNS" : "Edit Custom DNS")
@@ -54,6 +66,12 @@ struct CustomDNSEditorView: View {
                 .textFieldStyle(.roundedBorder)
                 .help("Use comma to add multiple IPv6 entries if needed")
 
+            if !invalidEntries.isEmpty {
+                Text("Not a valid IPv4/IPv6 address: \(invalidEntries.joined(separator: ", "))")
+                    .font(.caption)
+                    .foregroundStyle(.red)
+            }
+
             HStack {
                 Button("Cancel") {
                     onCancel()
@@ -76,7 +94,8 @@ struct CustomDNSEditorView: View {
                 }
                 .keyboardShortcut(.return)
                 .disabled(name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ||
-                          primaryDNS.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                          primaryDNS.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ||
+                          !invalidEntries.isEmpty)
             }
         }
         .padding()

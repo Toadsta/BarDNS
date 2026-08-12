@@ -47,11 +47,11 @@ struct BarDNS: App {
         .defaultSize(width: 0, height: 0)
         .modelContainer(modelContainer)
         
-        MenuBarExtra("BarDNS", systemImage: "bolt.horizontal.fill") {
+        MenuBarExtra("BarDNS", systemImage: "server.rack") {
             MenuBarView()
-                .environment(\.modelContext, modelContainer.mainContext)
                 .frame(width: 300)
         }
+        .modelContainer(modelContainer)
 
         Window("BarDNS Settings", id: "settings") {
             SettingsView()

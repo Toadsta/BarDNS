@@ -34,7 +34,14 @@ class DNSManager {
         "2a10:50c0::ad1:ff",  // IPv6 Primary
         "2a10:50c0::ad2:ff"   // IPv6 Secondary
     ]
-    
+
+    let googleServers = [
+        "8.8.8.8",                // IPv4 Primary
+        "8.8.4.4",                // IPv4 Secondary
+        "2001:4860:4860::8888",   // IPv6 Primary
+        "2001:4860:4860::8844"    // IPv6 Secondary
+    ]
+
     
     private func getNetworkServices() -> [String] {
         let task = Process()
@@ -234,7 +241,7 @@ class DNSManager {
     /// Validates that a string is a real IPv4 or IPv6 address, so nothing else
     /// (shell metacharacters, hostnames, etc.) can reach a shell command built
     /// from user-entered DNS server text.
-    private func isValidIPAddress(_ address: String) -> Bool {
+    func isValidIPAddress(_ address: String) -> Bool {
         var ipv4Addr = in_addr()
         if address.withCString({ inet_pton(AF_INET, $0, &ipv4Addr) }) == 1 {
             return true
@@ -246,7 +253,7 @@ class DNSManager {
         return false
     }
 
-    private func parseDNSServer(_ input: String) -> (address: String, port: Int?)? {
+    func parseDNSServer(_ input: String) -> (address: String, port: Int?)? {
         let trimmed = input.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return nil }
 

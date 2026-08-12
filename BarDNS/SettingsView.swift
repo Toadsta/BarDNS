@@ -8,6 +8,8 @@
 
 import SwiftUI
 import SwiftData
+import ServiceManagement
+import AppKit
 
 struct SettingsView: View {
     enum Section: String, CaseIterable, Identifiable {
@@ -84,12 +86,15 @@ private struct GeneralSettingsView: View {
     @Query(sort: \DNSSettings.timestamp) private var dnsSettings: [DNSSettings]
     @Query(sort: \CustomDNSServer.name) private var customServers: [CustomDNSServer]
     @State private var isUpdating = false
+    @State private var launchAtLogin = SMAppService.mainApp.status == .enabled
+    @State private var showLaunchAtLoginError = false
 
     private var activeDescription: String {
         guard let settings = dnsSettings.first else { return "Default DNS" }
         if settings.isCloudflareEnabled { return "Cloudflare DNS" }
         if settings.isQuad9Enabled { return "Quad9 DNS" }
         if settings.isAdGuardEnabled ?? false { return "AdGuard DNS" }
+        if settings.isGoogleEnabled ?? false { return "Google DNS" }
         if let activeID = settings.activeCustomDNSID,
            let server = customServers.first(where: { $0.id == activeID }) {
             return server.name
@@ -102,11 +107,19 @@ private struct GeneralSettingsView: View {
         return !settings.isCloudflareEnabled &&
             !settings.isQuad9Enabled &&
             !(settings.isAdGuardEnabled ?? false) &&
+            !(settings.isGoogleEnabled ?? false) &&
             settings.activeCustomDNSID == nil
     }
 
     var body: some View {
         Form {
+            Section {
+                Toggle("Launch at Login", isOn: $launchAtLogin)
+                    .onChange(of: launchAtLogin) { _, newValue in
+                        setLaunchAtLogin(newValue)
+                    }
+            }
+
             Section {
                 HStack {
                     Text("Currently Active")
@@ -134,6 +147,24 @@ private struct GeneralSettingsView: View {
         }
         .formStyle(.grouped)
         .navigationTitle("General")
+        .alert("Couldn't Update Login Item", isPresented: $showLaunchAtLoginError) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text("BarDNS couldn't register as a login item. This usually requires the app to be installed in /Applications.")
+        }
+    }
+
+    private func setLaunchAtLogin(_ enabled: Bool) {
+        do {
+            if enabled {
+                try SMAppService.mainApp.register()
+            } else {
+                try SMAppService.mainApp.unregister()
+            }
+        } catch {
+            launchAtLogin = SMAppService.mainApp.status == .enabled
+            showLaunchAtLoginError = true
+        }
     }
 
     private func revertToDefault() {
@@ -165,6 +196,7 @@ private struct DNSProvidersSettingsView: View {
         Form {
             Section {
                 Toggle("Cloudflare DNS", isOn: binding(\.isCloudflareVisible))
+                Toggle("Google DNS", isOn: binding(\.isGoogleVisible))
                 Toggle("Quad9 DNS", isOn: binding(\.isQuad9Visible))
                 Toggle("AdGuard DNS", isOn: binding(\.isAdGuardVisible))
             } header: {
@@ -391,23 +423,32 @@ private struct AboutSettingsView: View {
     }
 
     var body: some View {
-        Form {
-            Section {
-                HStack {
-                    Text("BarDNS")
-                    Spacer()
-                    Text(versionText)
-                        .foregroundStyle(.secondary)
-                }
+        VStack(spacing: 0) {
+            VStack(spacing: 8) {
+                Image(nsImage: NSApplication.shared.applicationIconImage)
+                    .resizable()
+                    .frame(width: 96, height: 96)
 
-                LabeledContent("GitHub") {
-                    Link("Toadsta/BarDNS", destination: URL(string: "https://github.com/Toadsta/BarDNS")!)
-                }
-            } footer: {
-                Text("A fork of DNS Easy Switcher by Gregory Linford.")
+                Text("BarDNS")
+                    .font(.title2.bold())
+
+                Text(versionText)
+                    .foregroundStyle(.secondary)
             }
+            .padding(.top, 32)
+            .padding(.bottom, 16)
+
+            Form {
+                Section {
+                    LabeledContent("GitHub") {
+                        Link("Toadsta/BarDNS", destination: URL(string: "https://github.com/Toadsta/BarDNS")!)
+                    }
+                } footer: {
+                    Text("A fork of DNS Easy Switcher by Gregory Linford.")
+                }
+            }
+            .formStyle(.grouped)
         }
-        .formStyle(.grouped)
         .navigationTitle("About")
     }
 }

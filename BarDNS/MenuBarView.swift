@@ -20,13 +20,15 @@ struct MenuBarView: View {
         return !settings.isCloudflareEnabled &&
             !settings.isQuad9Enabled &&
             !(settings.isAdGuardEnabled ?? false) &&
+            !(settings.isGoogleEnabled ?? false) &&
             settings.activeCustomDNSID == nil
     }
 
     private var hasVisiblePresets: Bool {
         (dnsSettings.first?.isCloudflareVisible ?? true) ||
         (dnsSettings.first?.isQuad9Visible ?? true) ||
-        (dnsSettings.first?.isAdGuardVisible ?? true)
+        (dnsSettings.first?.isAdGuardVisible ?? true) ||
+        (dnsSettings.first?.isGoogleVisible ?? true)
     }
 
     var body: some View {
@@ -50,6 +52,14 @@ struct MenuBarView: View {
                         label: "Cloudflare DNS",
                         isOn: dnsSettings.first?.isCloudflareEnabled ?? false,
                         action: { activateDNS(type: .cloudflare) }
+                    )
+                }
+
+                if dnsSettings.first?.isGoogleVisible ?? true {
+                    dnsToggleRow(
+                        label: "Google DNS",
+                        isOn: dnsSettings.first?.isGoogleEnabled ?? false,
+                        action: { activateDNS(type: .google) }
                     )
                 }
 
@@ -117,6 +127,7 @@ struct MenuBarView: View {
         case cloudflare
         case quad9
         case adguard
+        case google
         case custom(CustomDNSServer)
 
         static func == (lhs: DNSType, rhs: DNSType) -> Bool {
@@ -128,6 +139,8 @@ struct MenuBarView: View {
             case (.quad9, .quad9):
                 return true
             case (.adguard, .adguard):
+                return true
+            case (.google, .google):
                 return true
             case (.custom(let lServer), .custom(let rServer)):
                 return lServer.id == rServer.id
@@ -162,6 +175,15 @@ struct MenuBarView: View {
             }
         case .adguard:
             DNSManager.shared.setPredefinedDNS(dnsServers: DNSManager.shared.adguardServers) { success in
+                if success {
+                    Task { @MainActor in
+                        updateSettings(type: type)
+                    }
+                }
+                isUpdating = false
+            }
+        case .google:
+            DNSManager.shared.setPredefinedDNS(dnsServers: DNSManager.shared.googleServers) { success in
                 if success {
                     Task { @MainActor in
                         updateSettings(type: type)
@@ -209,6 +231,7 @@ struct MenuBarView: View {
         settings.isCloudflareEnabled = (type == .cloudflare)
         settings.isQuad9Enabled = (type == .quad9)
         settings.isAdGuardEnabled = type == .adguard ? true : nil
+        settings.isGoogleEnabled = type == .google ? true : nil
 
         if case .custom(let server) = type {
             settings.activeCustomDNSID = server.id

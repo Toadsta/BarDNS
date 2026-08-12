@@ -47,6 +47,8 @@ final class DNSSettings {
     var isCloudflareVisible: Bool = true
     var isQuad9Visible: Bool = true
     var isAdGuardVisible: Bool = true
+    var isGoogleEnabled: Bool?
+    var isGoogleVisible: Bool = true
 
     init(id: String = UUID().uuidString,
          isCloudflareEnabled: Bool = false,
@@ -56,7 +58,9 @@ final class DNSSettings {
          isAdGuardEnabled: Bool? = false,
          isCloudflareVisible: Bool = true,
          isQuad9Visible: Bool = true,
-         isAdGuardVisible: Bool = true) {
+         isAdGuardVisible: Bool = true,
+         isGoogleEnabled: Bool? = false,
+         isGoogleVisible: Bool = true) {
         self.id = id
         self.isCloudflareEnabled = isCloudflareEnabled
         self.isQuad9Enabled = isQuad9Enabled
@@ -66,6 +70,8 @@ final class DNSSettings {
         self.isCloudflareVisible = isCloudflareVisible
         self.isQuad9Visible = isQuad9Visible
         self.isAdGuardVisible = isAdGuardVisible
+        self.isGoogleEnabled = isGoogleEnabled
+        self.isGoogleVisible = isGoogleVisible
     }
 }
 
@@ -75,6 +81,7 @@ extension DNSSettings {
         isCloudflareEnabled = false
         isQuad9Enabled = false
         isAdGuardEnabled = nil
+        isGoogleEnabled = nil
         activeCustomDNSID = nil
         timestamp = Date()
     }

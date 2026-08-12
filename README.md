@@ -17,6 +17,7 @@ A macOS menu bar app that allows you to quickly switch between different DNS pro
   - Cloudflare DNS (1.1.1.1)
   - Quad9 DNS (9.9.9.9)
   - AdGuard DNS (94.140.14.14)
+  - Google DNS (8.8.8.8)
 - Disable DNS Overrides (DHCP-Provided DNS)
 - Add and manage your own custom DNS servers
 - Test DNS speed to find the fastest provider
