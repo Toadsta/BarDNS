@@ -20,6 +20,8 @@
 		91FFB82F2D6E6868008C0471 /* DNSSpeedTester.swift in Sources */ = {isa = PBXBuildFile; fileRef = 91FFB82E2D6E6868008C0471 /* DNSSpeedTester.swift */; };
 		AA11000000000000000A0001 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA11000000000000000A0002 /* SettingsView.swift */; };
 		AA11000000000000000A0003 /* CustomDNSEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA11000000000000000A0004 /* CustomDNSEditorView.swift */; };
+		AA11000000000000000A0005 /* NetworkDNSProfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA11000000000000000A0006 /* NetworkDNSProfile.swift */; };
+		AA11000000000000000A0007 /* NetworkMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA11000000000000000A0008 /* NetworkMonitor.swift */; };
 		EF69B7B3BB4D8DAF391DCF8F /* CustomDNSServerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B9AC3729D0930AF7910CAF3 /* CustomDNSServerTests.swift */; };
 		F65FE2D362B01700265909D7 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4E599046F4C3BC30A03FBA1B /* Cocoa.framework */; };
 /* End PBXBuildFile section */
@@ -52,6 +54,8 @@
 		91FFB82E2D6E6868008C0471 /* DNSSpeedTester.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DNSSpeedTester.swift; sourceTree = "<group>"; };
 		AA11000000000000000A0002 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		AA11000000000000000A0004 /* CustomDNSEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomDNSEditorView.swift; sourceTree = "<group>"; };
+		AA11000000000000000A0006 /* NetworkDNSProfile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkDNSProfile.swift; sourceTree = "<group>"; };
+		AA11000000000000000A0008 /* NetworkMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkMonitor.swift; sourceTree = "<group>"; };
 		FB0E7EC381FF50D850CF53F3 /* BarDNSTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BarDNSTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -135,6 +139,8 @@
 				91FFB82E2D6E6868008C0471 /* DNSSpeedTester.swift */,
 				AA11000000000000000A0002 /* SettingsView.swift */,
 				AA11000000000000000A0004 /* CustomDNSEditorView.swift */,
+				AA11000000000000000A0006 /* NetworkDNSProfile.swift */,
+				AA11000000000000000A0008 /* NetworkMonitor.swift */,
 			);
 			path = BarDNS;
 			sourceTree = "<group>";
@@ -251,6 +257,8 @@
 				9165B67B2D6B62CC00DD9643 /* DNSManager.swift in Sources */,
 				AA11000000000000000A0001 /* SettingsView.swift in Sources */,
 				AA11000000000000000A0003 /* CustomDNSEditorView.swift in Sources */,
+				AA11000000000000000A0005 /* NetworkDNSProfile.swift in Sources */,
+				AA11000000000000000A0007 /* NetworkMonitor.swift in Sources */,
 				9165B6682D6B616D00DD9643 /* BarDNS.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -445,6 +453,7 @@
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_LSUIElement = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "BarDNS uses your Wi-Fi network name to automatically apply a saved DNS profile when you join that network.";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
@@ -480,6 +489,7 @@
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_LSUIElement = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "BarDNS uses your Wi-Fi network name to automatically apply a saved DNS profile when you join that network.";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",

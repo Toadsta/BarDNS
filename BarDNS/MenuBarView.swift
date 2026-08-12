@@ -112,6 +112,7 @@ struct MenuBarView: View {
         }
         .onAppear {
             ensureSettingsExist()
+            NetworkMonitor.shared.start(modelContext: modelContext)
         }
         .onReceive(NotificationCenter.default.publisher(for: .bardnsOpenSettingsGeneral)) { _ in
             openWindow(id: "settings")

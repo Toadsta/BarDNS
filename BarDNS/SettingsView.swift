@@ -12,7 +12,7 @@ import AppKit
 
 struct SettingsView: View {
     enum Section: String, CaseIterable, Identifiable {
-        case general, dnsProviders, advanced, about
+        case general, dnsProviders, networks, advanced, about
 
         var id: String { rawValue }
 
@@ -20,6 +20,7 @@ struct SettingsView: View {
             switch self {
             case .general: return "General"
             case .dnsProviders: return "DNS Providers"
+            case .networks: return "Networks"
             case .advanced: return "Advanced"
             case .about: return "About"
             }
@@ -29,6 +30,7 @@ struct SettingsView: View {
             switch self {
             case .general: return "gearshape.fill"
             case .dnsProviders: return "network"
+            case .networks: return "wifi"
             case .advanced: return "wrench.and.screwdriver.fill"
             case .about: return "info.circle.fill"
             }
@@ -38,6 +40,7 @@ struct SettingsView: View {
             switch self {
             case .general: return .gray
             case .dnsProviders: return .blue
+            case .networks: return .green
             case .advanced: return .purple
             case .about: return .gray
             }
@@ -70,6 +73,8 @@ struct SettingsView: View {
                 GeneralSettingsView()
             case .dnsProviders:
                 DNSProvidersSettingsView()
+            case .networks:
+                NetworkSettingsView()
             case .advanced:
                 AdvancedSettingsView()
             case .about:
@@ -399,6 +404,103 @@ private struct DNSProvidersSettingsView: View {
                 }
             }
         }
+    }
+}
+
+/// Beta mockup: lets you save a DNS selection per Wi-Fi network, auto-applied by
+/// NetworkMonitor when you join that network. Not part of the released app.
+private struct NetworkSettingsView: View {
+    @Environment(\.modelContext) private var modelContext
+    @Query(sort: \NetworkDNSProfile.timestamp) private var profiles: [NetworkDNSProfile]
+    @Query(sort: \CustomDNSServer.name) private var customServers: [CustomDNSServer]
+    private var monitor = NetworkMonitor.shared
+
+    var body: some View {
+        Form {
+            Section {
+                switch monitor.authorizationStatus {
+                case .authorized, .authorizedAlways:
+                    HStack {
+                        Text("Current Network")
+                        Spacer()
+                        Text(monitor.currentNetworkName ?? "Not on Wi-Fi")
+                            .foregroundStyle(.secondary)
+                    }
+                    if let current = monitor.currentNetworkName,
+                       !profiles.contains(where: { $0.networkName == current }) {
+                        Button("Add This Network") {
+                            modelContext.insert(NetworkDNSProfile(networkName: current))
+                            try? modelContext.save()
+                        }
+                    }
+                default:
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("BarDNS needs Location Services permission to read your Wi-Fi network name, so it can tell which network to apply a profile for.")
+                            .font(.callout)
+                            .foregroundStyle(.secondary)
+                        Button("Grant Location Access") {
+                            monitor.requestAuthorization()
+                        }
+                    }
+                }
+            } header: {
+                Text("Current Network")
+            }
+
+            Section {
+                if profiles.isEmpty {
+                    Text("No saved networks yet")
+                        .foregroundStyle(.secondary)
+                } else {
+                    ForEach(profiles) { profile in
+                        HStack {
+                            Text(profile.networkName)
+                            Spacer()
+                            Picker("", selection: binding(for: profile)) {
+                                Text("Don't Override").tag(nil as String?)
+                                Text("Cloudflare DNS").tag("cloudflare" as String?)
+                                Text("Quad9 DNS").tag("quad9" as String?)
+                                Text("AdGuard DNS").tag("adguard" as String?)
+                                Text("Google DNS").tag("google" as String?)
+                                ForEach(customServers) { server in
+                                    Text(server.name).tag(server.id as String?)
+                                }
+                            }
+                            .labelsHidden()
+                            .frame(width: 160)
+
+                            Button {
+                                delete(profile)
+                            } label: {
+                                Image(systemName: "trash")
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+                }
+            } header: {
+                Text("Saved Networks")
+            } footer: {
+                Text("When you join one of these networks, BarDNS automatically switches to the selected DNS.")
+            }
+        }
+        .formStyle(.grouped)
+        .navigationTitle("Networks")
+    }
+
+    private func binding(for profile: NetworkDNSProfile) -> Binding<String?> {
+        Binding(
+            get: { profile.selection },
+            set: { newValue in
+                profile.selection = newValue
+                try? modelContext.save()
+            }
+        )
+    }
+
+    private func delete(_ profile: NetworkDNSProfile) {
+        modelContext.delete(profile)
+        try? modelContext.save()
     }
 }
 

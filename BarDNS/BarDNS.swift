@@ -83,7 +83,8 @@ struct BarDNS: App {
         do {
             let schema = Schema([
                 DNSSettings.self,
-                CustomDNSServer.self
+                CustomDNSServer.self,
+                NetworkDNSProfile.self
             ])
             let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
             self.modelContainer = try ModelContainer(for: schema, configurations: [modelConfiguration])
@@ -92,7 +93,8 @@ struct BarDNS: App {
             // fall back to an in-memory container so the app can still launch.
             let schema = Schema([
                 DNSSettings.self,
-                CustomDNSServer.self
+                CustomDNSServer.self,
+                NetworkDNSProfile.self
             ])
             self.modelContainer = try! ModelContainer(
                 for: schema,
