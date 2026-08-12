@@ -1,6 +1,11 @@
+<img src="icon.png" width="80" align="left">
+
 # BarDNS
 
 A macOS menu bar app that allows you to quickly switch between different DNS providers (or add custom ones).
+
+<br clear="left">
+
 
 ![Screenshot of BarDNS](screenshot.png)
 
