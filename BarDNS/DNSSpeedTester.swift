@@ -34,7 +34,32 @@ class DNSSpeedTester {
     
     // Track running tasks to ensure proper cleanup
     private var runningTasks: [Process] = []
+    private let runningTasksLock = NSLock()
     private var isCurrentlyTesting = false
+
+    private func addRunningTask(_ task: Process) {
+        runningTasksLock.lock()
+        runningTasks.append(task)
+        runningTasksLock.unlock()
+    }
+
+    private func removeRunningTask(_ task: Process) {
+        runningTasksLock.lock()
+        if let index = runningTasks.firstIndex(where: { $0 === task }) {
+            runningTasks.remove(at: index)
+        }
+        runningTasksLock.unlock()
+    }
+
+    /// Empties the tracked task list and returns what was in it, for cleanup.
+    @discardableResult
+    private func drainRunningTasks() -> [Process] {
+        runningTasksLock.lock()
+        let tasks = runningTasks
+        runningTasks = []
+        runningTasksLock.unlock()
+        return tasks
+    }
     
     // Perform ping test for all DNS servers including custom ones
     func testAllDNS(customServers: [CustomDNSServer], completion: @escaping ([PingResult]) -> Void) {
@@ -45,14 +70,15 @@ class DNSSpeedTester {
         }
         
         isCurrentlyTesting = true
-        runningTasks = []
-        
+        drainRunningTasks()
+
         let dnsManager = DNSManager.shared
         
         var allDNSToTest: [(String, String, Bool, String?)] = [
             ("Cloudflare", dnsManager.cloudflareServers[0], false, nil),
             ("Quad9", dnsManager.quad9Servers[0], false, nil),
-            ("AdGuard", dnsManager.adguardServers[0], false, nil)
+            ("AdGuard", dnsManager.adguardServers[0], false, nil),
+            ("Google", dnsManager.googleServers[0], false, nil)
         ]
         
         
@@ -109,30 +135,24 @@ class DNSSpeedTester {
         
         group.notify(queue: .main) { [weak self] in
             guard let self = self else { return }
-            
+
             // Clean up any remaining processes
-            for task in self.runningTasks {
-                if task.isRunning {
-                    task.terminate()
-                }
+            for task in self.drainRunningTasks() where task.isRunning {
+                task.terminate()
             }
-            self.runningTasks = []
             self.isCurrentlyTesting = false
-            
+
             // Sort results by response time
             let sortedResults = results.sorted { $0.responseTime < $1.responseTime }
             completion(sortedResults)
         }
     }
-    
+
     // Cancel any ongoing tests
     func cancelTests() {
-        for task in runningTasks {
-            if task.isRunning {
-                task.terminate()
-            }
+        for task in drainRunningTasks() where task.isRunning {
+            task.terminate()
         }
-        runningTasks = []
         isCurrentlyTesting = false
     }
     
@@ -143,7 +163,7 @@ class DNSSpeedTester {
     
     // Strips any port suffix and detects IPv6, since ping only understands bare addresses
     // and IPv6 requires ping6 on macOS.
-    private func resolvePingTarget(_ server: String) -> (host: String, isIPv6: Bool) {
+    func resolvePingTarget(_ server: String) -> (host: String, isIPv6: Bool) {
         let address = server.trimmingCharacters(in: .whitespacesAndNewlines)
 
         // Bracketed IPv6 with optional port, e.g. [2001:db8::1]:53
@@ -189,17 +209,14 @@ class DNSSpeedTester {
         task.standardError = pipe
         
         // Keep track of task for cleanup
-        runningTasks.append(task)
-        
+        addRunningTask(task)
+
         // Set up termination handler before running
         task.terminationHandler = { [weak self] process in
             guard let self = self else { return }
-            
-            // Remove this task from our tracking list
-            if let index = self.runningTasks.firstIndex(where: { $0 === process }) {
-                self.runningTasks.remove(at: index)
-            }
-            
+
+            self.removeRunningTask(process)
+
             let data = pipe.fileHandleForReading.readDataToEndOfFile()
             let output = String(data: data, encoding: .utf8) ?? ""
 
@@ -232,11 +249,7 @@ class DNSSpeedTester {
         do {
             try task.run()
         } catch {
-            // Remove this task from our tracking list if it failed to start
-            if let index = runningTasks.firstIndex(where: { $0 === task }) {
-                runningTasks.remove(at: index)
-            }
-            
+            removeRunningTask(task)
             completion(999, false) // Process failed to start
         }
     }

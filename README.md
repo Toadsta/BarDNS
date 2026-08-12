@@ -1,23 +1,25 @@
-# BarDNS
+<img src="icon.png" width="80">
 
-[A fork of DNS Easy Switcher](https://github.com/glinford/dns-easy-switcher)
+# BarDNS
+![stars](https://img.shields.io/github/stars/Toadsta/BarDNS) ![downloads](https://img.shields.io/github/downloads/Toadsta/BarDNS/total) ![license](https://img.shields.io/github/license/Toadsta/BarDNS)
 
 A macOS menu bar app that allows you to quickly switch between different DNS providers (or add custom ones).
 
-![Screenshot of BarDNS](screenshot.png)
-
-![downloads](https://img.shields.io/github/downloads/Toadsta/BarDNS/total)
+<img src="menu.png" width="400" alt="The BarDNS menu"> <img src="dns-providers.png" width="400" alt="The BarDNS Settings window, DNS Providers page">
 
 ## Features
 
-- Easy switching between popular DNS providers:
+- Switch between popular DNS providers:
   - Cloudflare DNS (1.1.1.1)
+  - Google DNS (8.8.8.8)
   - Quad9 DNS (9.9.9.9)
   - AdGuard DNS (94.140.14.14)
-- Disable DNS Overrides (DHCP-Provided DNS)
-- Add and manage your own custom DNS servers
+- Add, edit, and manage your own custom DNS servers
+- Hide any preset provider you don't use, right from Settings
+- Revert to Default DNS (whatever your router/ISP provides) with one click
 - Test DNS speed to find the fastest provider
-- Flush DNS Cache
+- Clear DNS Cache
+- Launch at Login
 - Touch ID authentication for DNS changes
 - Native macOS menu bar integration
 - Persists your settings between app launches
@@ -46,19 +48,30 @@ brew upgrade --cask bardns
 3. Drag BarDNS to your Applications folder
 4. Launch BarDNS from Applications
 
+### Uninstalling
+
+- **Homebrew:** `brew uninstall --cask bardns`
+- **Manual:** quit BarDNS, then drag `BarDNS.app` from Applications to the Trash
+
+BarDNS reverts your DNS to default automatically when you switch it off, but if you uninstall while a DNS override is still active, remember to revert to Default DNS first.
+
 ## First Launch
 
-Since BarDNS is distributed outside the Mac App Store, macOS may show a security warning when you first launch it.
+Since BarDNS is ad-hoc signed only (not notarized by Apple), macOS will block it the first time you open it.
 
-BarDNS is currently ad-hoc signed only (not notarized by Apple), so the warning may be more restrictive than for a notarized app. To allow it to run:
+1. Open BarDNS from your Applications folder. You'll see a warning that Apple could not verify it — click "Done".
 
-1. Right-click (or Control-click) on BarDNS in your Applications folder
-2. Select "Open" from the context menu
-3. Click "Open" in the dialog that appears
-4. If macOS still blocks it, go to System Settings > Privacy & Security and click "Open Anyway", then confirm
-5. Allow system extensions when prompted (required for DNS changes)
+   ![BarDNS blocked by Gatekeeper](gatekeeper-blocked.png)
 
-![settings](settings.png)
+2. Go to System Settings > Privacy & Security, scroll down, and click "Open Anyway" next to the BarDNS warning.
+
+   ![Allow BarDNS in Privacy & Security](gatekeeper-privacy-settings.png)
+
+3. Confirm by clicking "Open Anyway" again in the dialog that appears.
+
+   ![Confirm Open Anyway](gatekeeper-confirm.png)
+
+BarDNS should now launch normally on every future open.
 
 ## Important Note
 
@@ -75,6 +88,8 @@ Due to macOS security requirements, administrator privileges are required each t
 | macOS Version | Status |
 |--------------|--------|
 | Sonoma 14.5 | ✅ |
+| Tahoe 26 | ✅ |
+| Golden Gate 27.0 | ✅ |
 
 ## Building from Source
 
@@ -93,11 +108,15 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
+Found a bug or have a feature request? [Open an issue](../../issues).
+
 ## Acknowledgments
 
+- [Gregory Linford](https://github.com/glinford) for creating the original [DNS Easy Switcher](https://github.com/glinford/dns-easy-switcher), which BarDNS is forked from
 - [Cloudflare DNS](https://1.1.1.1) for their public DNS service
 - [Quad9](https://quad9.net) for their secure DNS service
 - [AdGuard DNS](https://adguard-dns.io/en/welcome.html) for their privacy-focused DNS service with ad blocking capabilities
+- [Google Public DNS](https://developers.google.com/speed/public-dns) for their public DNS service
 
 ## Privacy
 

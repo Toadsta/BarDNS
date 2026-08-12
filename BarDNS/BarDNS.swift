@@ -12,8 +12,6 @@ import AppKit
 
 @main
 struct BarDNS: App {
-    @StateObject private var menuBarController = MenuBarController()
-    
     let modelContainer: ModelContainer
     
     init() {
@@ -49,10 +47,16 @@ struct BarDNS: App {
         .defaultSize(width: 0, height: 0)
         .modelContainer(modelContainer)
         
-        MenuBarExtra("BarDNS", systemImage: "bolt.horizontal.fill") {
+        MenuBarExtra("BarDNS", systemImage: "server.rack") {
             MenuBarView()
                 .environment(\.modelContext, modelContainer.mainContext)
                 .frame(width: 300)
         }
+
+        Window("BarDNS Settings", id: "settings") {
+            SettingsView()
+        }
+        .modelContainer(modelContainer)
+        .windowResizability(.contentSize)
     }
 }
