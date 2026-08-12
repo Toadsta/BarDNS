@@ -6,7 +6,6 @@ A macOS menu bar app that allows you to quickly switch between different DNS pro
 
 <br clear="left">
 
-
 ![Screenshot of BarDNS](screenshot.png)
 
 ![downloads](https://img.shields.io/github/downloads/Toadsta/BarDNS/total)
@@ -79,6 +78,8 @@ Due to macOS security requirements, administrator privileges are required each t
 | macOS Version | Status |
 |--------------|--------|
 | Sonoma 14.5 | ✅ |
+| Tahoe 26 | ✅ |
+| Golden Gate 27.0 | ✅ |
 
 ## Building from Source
 
@@ -103,6 +104,7 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 - [Cloudflare DNS](https://1.1.1.1) for their public DNS service
 - [Quad9](https://quad9.net) for their secure DNS service
 - [AdGuard DNS](https://adguard-dns.io/en/welcome.html) for their privacy-focused DNS service with ad blocking capabilities
+- [Google Public DNS](https://developers.google.com/speed/public-dns) for their public DNS service
 
 ## Privacy
 
