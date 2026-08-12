@@ -7,6 +7,7 @@
 //
 import SwiftUI
 import SwiftData
+import UserNotifications
 
 struct MenuBarView: View {
     @Environment(\.modelContext) private var modelContext
@@ -91,7 +92,13 @@ struct MenuBarView: View {
 
                 Divider()
 
-                Button("Settings") {
+                Menu {
+                    Button("Run Speed Test") { openSettings(on: .advanced, autoRunSpeedTest: true) }
+                    Button("Clear DNS Cache") { clearDNSCacheShortcut() }
+                    Button("Add Custom DNS") { openSettings(on: .dnsProviders, autoAddCustomDNS: true) }
+                } label: {
+                    Text("Settings")
+                } primaryAction: {
                     openWindow(id: "settings")
                 }
                 .padding(.vertical, 5)
@@ -106,6 +113,43 @@ struct MenuBarView: View {
         .onAppear {
             ensureSettingsExist()
         }
+        .onReceive(NotificationCenter.default.publisher(for: .bardnsOpenSettingsGeneral)) { _ in
+            openWindow(id: "settings")
+        }
+    }
+
+    private func postNotification(title: String, body: String) {
+        let center = UNUserNotificationCenter.current()
+        center.requestAuthorization(options: [.alert]) { granted, _ in
+            guard granted else { return }
+            let content = UNMutableNotificationContent()
+            content.title = title
+            content.body = body
+            let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: nil)
+            center.add(request)
+        }
+    }
+
+    // A system notification, unlike an alert attached to this view, still reaches the user if the
+    // menu bar popover has already closed by the time the async DNS change finishes (e.g. because
+    // the Touch ID / admin-password prompt stole focus and dismissed it).
+    private func notifyFailure() {
+        postNotification(
+            title: "Couldn't Update DNS",
+            body: "The change didn't take effect on your Mac's network settings. Try again from the menu."
+        )
+    }
+
+    private func openSettings(on section: SettingsView.Section, autoRunSpeedTest: Bool = false, autoAddCustomDNS: Bool = false) {
+        QuickActionStore.shared.pendingSection = section
+        QuickActionStore.shared.shouldAutoRunSpeedTest = autoRunSpeedTest
+        QuickActionStore.shared.shouldAutoAddCustomDNS = autoAddCustomDNS
+        NotificationCenter.default.post(name: .bardnsQuickAction, object: nil)
+        openWindow(id: "settings")
+    }
+
+    private func clearDNSCacheShortcut() {
+        DNSManager.shared.clearDNSCache { _ in }
     }
 
     @ViewBuilder
@@ -161,6 +205,8 @@ struct MenuBarView: View {
                     Task { @MainActor in
                         updateSettings(type: type)
                     }
+                } else {
+                    notifyFailure()
                 }
                 isUpdating = false
             }
@@ -170,6 +216,8 @@ struct MenuBarView: View {
                     Task { @MainActor in
                         updateSettings(type: type)
                     }
+                } else {
+                    notifyFailure()
                 }
                 isUpdating = false
             }
@@ -179,6 +227,8 @@ struct MenuBarView: View {
                     Task { @MainActor in
                         updateSettings(type: type)
                     }
+                } else {
+                    notifyFailure()
                 }
                 isUpdating = false
             }
@@ -188,6 +238,8 @@ struct MenuBarView: View {
                     Task { @MainActor in
                         updateSettings(type: type)
                     }
+                } else {
+                    notifyFailure()
                 }
                 isUpdating = false
             }
@@ -197,6 +249,8 @@ struct MenuBarView: View {
                     Task { @MainActor in
                         updateSettings(type: type)
                     }
+                } else {
+                    notifyFailure()
                 }
                 isUpdating = false
 
@@ -215,6 +269,8 @@ struct MenuBarView: View {
                 Task { @MainActor in
                     updateSettings(type: .none)
                 }
+            } else {
+                notifyFailure()
             }
             isUpdating = false
         }
