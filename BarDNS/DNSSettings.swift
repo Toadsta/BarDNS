@@ -69,6 +69,17 @@ final class DNSSettings {
     }
 }
 
+extension DNSSettings {
+    /// Clears every preset/custom selection, reverting to no DNS override.
+    func resetToDefault() {
+        isCloudflareEnabled = false
+        isQuad9Enabled = false
+        isAdGuardEnabled = nil
+        activeCustomDNSID = nil
+        timestamp = Date()
+    }
+}
+
 extension CustomDNSServer {
     /// Returns all user-entered DNS entries, supporting comma-separated values per field.
     var dnsEntries: [String] {

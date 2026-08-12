@@ -9,6 +9,7 @@
 import Foundation
 import AppKit
 import LocalAuthentication
+import Darwin
 
 class DNSManager {
     static let shared = DNSManager()
@@ -230,32 +231,51 @@ class DNSManager {
         return resolverContent
     }
 
+    /// Validates that a string is a real IPv4 or IPv6 address, so nothing else
+    /// (shell metacharacters, hostnames, etc.) can reach a shell command built
+    /// from user-entered DNS server text.
+    private func isValidIPAddress(_ address: String) -> Bool {
+        var ipv4Addr = in_addr()
+        if address.withCString({ inet_pton(AF_INET, $0, &ipv4Addr) }) == 1 {
+            return true
+        }
+        var ipv6Addr = in6_addr()
+        if address.withCString({ inet_pton(AF_INET6, $0, &ipv6Addr) }) == 1 {
+            return true
+        }
+        return false
+    }
+
     private func parseDNSServer(_ input: String) -> (address: String, port: Int?)? {
         let trimmed = input.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return nil }
-        
+
         // Support IPv6 with explicit port using bracket notation: [addr]:port
         if trimmed.hasPrefix("["), let closingBracket = trimmed.firstIndex(of: "]") {
             let address = String(trimmed[trimmed.index(after: trimmed.startIndex)..<closingBracket])
+            guard isValidIPAddress(address) else { return nil }
             let remainder = trimmed[trimmed.index(after: closingBracket)..<trimmed.endIndex]
             if remainder.hasPrefix(":") {
                 let portString = remainder.dropFirst()
-                if let port = Int(portString) {
+                if let port = Int(portString), (1...65535).contains(port) {
                     return (address, port)
                 }
             }
             return (address, nil)
         }
-        
+
         // IPv4 with port (single colon, numeric suffix)
         let parts = trimmed.split(separator: ":", omittingEmptySubsequences: false)
         if parts.count == 2,
-           let port = Int(parts[1]),
+           let port = Int(parts[1]), (1...65535).contains(port),
            !parts[0].contains(":") {
-            return (String(parts[0]), port)
+            let address = String(parts[0])
+            guard isValidIPAddress(address) else { return nil }
+            return (address, port)
         }
-        
+
         // IPv6 or plain address with no port
+        guard isValidIPAddress(trimmed) else { return nil }
         return (trimmed, nil)
     }
 
@@ -319,52 +339,6 @@ class DNSManager {
         }
     }
 
-    private func executePrivilegedCommand(arguments: [String]) -> Bool {
-        let services = findActiveServices()
-        guard !services.isEmpty else { return false }
-        
-        var success = true
-        
-        for service in services {
-            // Properly escape the arguments for AppleScript
-            let escapedArgs = arguments.map { arg in
-                return "\\\"" + arg.replacingOccurrences(of: "\\", with: "\\\\")
-                    .replacingOccurrences(of: "\"", with: "\\\"") + "\\\""
-            }.joined(separator: " ")
-            
-            // Combine IPv4 and IPv6 commands in a single script if we're setting DNS
-            let isSettingDNS = arguments[0] == "-setdnsservers"
-
-            let commandScript: String
-            if isSettingDNS {
-                // Combine DNS and IPv6 commands with semicolons in a single admin privilege request
-                let ipv6Script = "/usr/sbin/networksetup -setv6off '\(service)'; /usr/sbin/networksetup -setv6automatic '\(service)'"
-                commandScript = """
-                do shell script "/usr/sbin/networksetup \(escapedArgs); \(ipv6Script)" with administrator privileges with prompt "BarDNS needs to modify network settings"
-                """
-            } else {
-                // For other commands, keep as is
-                commandScript = """
-                do shell script "/usr/sbin/networksetup \(escapedArgs)" with administrator privileges with prompt "BarDNS needs to modify network settings"
-                """
-            }
-            
-            var error: NSDictionary?
-            if let scriptObject = NSAppleScript(source: commandScript) {
-                if scriptObject.executeAndReturnError(&error) == nil {
-                    if let error = error {
-                        print("Error executing privileged command: \(error)")
-                        success = false
-                    }
-                }
-            } else {
-                success = false
-            }
-        }
-        
-        return success
-    }
-    
     func clearDNSCache(completion: @escaping (Bool) -> Void) {
         let flushCommand = "dscacheutil -flushcache"
         
