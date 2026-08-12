@@ -31,6 +31,11 @@ final class NetworkMonitor: NSObject {
     private let monitorQueue = DispatchQueue(label: "com.toadsie.BarDNS.NetworkMonitor")
     private var modelContext: ModelContext?
     private var started = false
+    // NWPathMonitor fires on all sorts of minor path changes, not just an actual
+    // network switch — and applying DNS can itself trigger another path event.
+    // Without this guard, that's a feedback loop: apply -> path fires -> reapply
+    // -> path fires -> ... each iteration demanding a fresh auth prompt.
+    private var lastHandledNetworkName: String?
 
     var currentNetworkName: String?
     var authorizationStatus: CLAuthorizationStatus
@@ -66,6 +71,9 @@ final class NetworkMonitor: NSObject {
     }
 
     private func applyProfileIfNeeded(for networkName: String?) {
+        guard networkName != lastHandledNetworkName else { return }
+        lastHandledNetworkName = networkName
+
         guard let networkName, let modelContext else { return }
         let descriptor = FetchDescriptor<NetworkDNSProfile>(
             predicate: #Predicate { $0.networkName == networkName }
