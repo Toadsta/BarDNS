@@ -77,6 +77,21 @@ struct SettingsView: View {
             }
         }
         .frame(minWidth: 620, minHeight: 420)
+        .onReceive(NotificationCenter.default.publisher(for: .bardnsOpenSettingsGeneral)) { _ in
+            selection = .general
+        }
+        .onAppear {
+            syncPendingSection()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .bardnsQuickAction)) { _ in
+            syncPendingSection()
+        }
+    }
+
+    private func syncPendingSection() {
+        guard let pending = QuickActionStore.shared.pendingSection else { return }
+        selection = pending
+        QuickActionStore.shared.pendingSection = nil
     }
 }
 
@@ -112,6 +127,26 @@ private struct GeneralSettingsView: View {
 
     var body: some View {
         Form {
+            if let failureMessage = NotificationMessageStore.shared.failureMessage {
+                Section {
+                    HStack(alignment: .center, spacing: 8) {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .foregroundStyle(.orange)
+                            .imageScale(.large)
+                        Text(failureMessage)
+                            .font(.callout)
+                        Spacer()
+                        Button {
+                            NotificationMessageStore.shared.failureMessage = nil
+                        } label: {
+                            Image(systemName: "xmark.circle.fill")
+                                .foregroundStyle(.secondary)
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+            }
+
             Section {
                 Toggle("Launch at Login", isOn: $launchAtLogin)
                     .onChange(of: launchAtLogin) { _, newValue in
@@ -150,6 +185,11 @@ private struct GeneralSettingsView: View {
             Button("OK", role: .cancel) {}
         } message: {
             Text("BarDNS couldn't register as a login item. This usually requires the app to be installed in /Applications.")
+        }
+        .onDisappear {
+            // Leaving General (tab switch, or closing the whole Settings window while here)
+            // both remove this view the same way, so this covers both without extra plumbing.
+            NotificationMessageStore.shared.failureMessage = nil
         }
     }
 
@@ -318,6 +358,18 @@ private struct DNSProvidersSettingsView: View {
         } message: {
             Text("The saved changes didn't take effect on your Mac's network settings. Try again from DNS Providers.")
         }
+        .onAppear {
+            checkAutoAddCustomDNS()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .bardnsQuickAction)) { _ in
+            checkAutoAddCustomDNS()
+        }
+    }
+
+    private func checkAutoAddCustomDNS() {
+        guard QuickActionStore.shared.shouldAutoAddCustomDNS else { return }
+        QuickActionStore.shared.shouldAutoAddCustomDNS = false
+        isAddingNew = true
     }
 
     private func binding(_ keyPath: ReferenceWritableKeyPath<DNSSettings, Bool>) -> Binding<Bool> {
@@ -397,6 +449,18 @@ private struct AdvancedSettingsView: View {
         }
         .formStyle(.grouped)
         .navigationTitle("Advanced")
+        .onAppear {
+            checkAutoRunSpeedTest()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .bardnsQuickAction)) { _ in
+            checkAutoRunSpeedTest()
+        }
+    }
+
+    private func checkAutoRunSpeedTest() {
+        guard QuickActionStore.shared.shouldAutoRunSpeedTest else { return }
+        QuickActionStore.shared.shouldAutoRunSpeedTest = false
+        runSpeedTest()
     }
 
     private func runSpeedTest() {
