@@ -2,6 +2,8 @@
 //  DNSManagerTests.swift
 //  BarDNSTests
 //
+//  Created by Victoria Taylor.
+//
 
 import XCTest
 @testable import BarDNS

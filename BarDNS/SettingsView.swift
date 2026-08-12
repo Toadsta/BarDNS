@@ -3,7 +3,6 @@
 //  BarDNS
 //
 //  Created by Victoria Taylor.
-//  Based on DNS Easy Switcher by Gregory Linford.
 //
 
 import SwiftUI
@@ -211,9 +210,17 @@ private struct DNSProvidersSettingsView: View {
                         .foregroundStyle(.secondary)
                 } else {
                     ForEach(customServers) { server in
-                        HStack {
-                            Text(server.name)
-                                .lineLimit(1)
+                        HStack(alignment: .center, spacing: 8) {
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(server.name)
+                                    .lineLimit(1)
+                                Text(server.primaryDNS)
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                                    .lineLimit(1)
+                            }
+
+                            Spacer()
 
                             if dnsSettings.first?.activeCustomDNSID == server.id {
                                 Text("Active")
@@ -221,25 +228,23 @@ private struct DNSProvidersSettingsView: View {
                                     .foregroundStyle(.secondary)
                             }
 
-                            Spacer()
-
-                            Button {
-                                editingServer = server
+                            Menu {
+                                Button("Edit") {
+                                    editingServer = server
+                                }
+                                Button("Delete", role: .destructive) {
+                                    pendingDelete = server
+                                }
                             } label: {
-                                Image(systemName: "pencil")
+                                Image(systemName: "ellipsis.circle")
+                                    .imageScale(.large)
                             }
-                            .buttonStyle(.plain)
-                            .help("Edit this DNS")
-
-                            Button {
-                                pendingDelete = server
-                            } label: {
-                                Image(systemName: "trash")
-                            }
-                            .buttonStyle(.plain)
-                            .foregroundStyle(.red)
-                            .help("Delete this DNS")
+                            .menuStyle(.borderlessButton)
+                            .menuIndicator(.hidden)
+                            .fixedSize()
+                            .help("Manage this DNS")
                         }
+                        .padding(.vertical, 4)
                     }
                 }
             } header: {
@@ -418,8 +423,7 @@ private struct AdvancedSettingsView: View {
 private struct AboutSettingsView: View {
     private var versionText: String {
         let shortVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "Unknown"
-        let buildNumber = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? ""
-        return buildNumber.isEmpty ? "Version \(shortVersion)" : "Version \(shortVersion) (\(buildNumber))"
+        return "Version \(shortVersion)"
     }
 
     var body: some View {
