@@ -49,9 +49,9 @@ struct BarDNS: App {
         
         MenuBarExtra("BarDNS", systemImage: "server.rack") {
             MenuBarView()
+                .environment(\.modelContext, modelContainer.mainContext)
                 .frame(width: 300)
         }
-        .modelContainer(modelContainer)
 
         Window("BarDNS Settings", id: "settings") {
             SettingsView()
