@@ -201,50 +201,53 @@ class DNSManager {
         executeWithAuthentication(command: removeResolverCmd) { _ in
             // Continue with normal DNS reset regardless of resolver removal success
             let dispatchGroup = DispatchGroup()
-            var allSucceeded = true
-            
+            var anySucceeded = false
+
             for service in services {
                 dispatchGroup.enter()
-                
+
                 let command = "/usr/sbin/networksetup -setdnsservers '\(service)' empty"
-                
+
                 self.executeWithAuthentication(command: command) { success in
-                    if !success {
-                        allSucceeded = false
+                    if success {
+                        anySucceeded = true
                     }
                     dispatchGroup.leave()
                 }
             }
-            
+
             dispatchGroup.notify(queue: .main) {
-                completion(allSucceeded)
+                completion(anySucceeded)
             }
         }
     }
 
-    // Helper method to set standard DNS settings
+    // Applies DNS settings to every enabled service, but reports success as long as at least one
+    // service accepted it — an inactive/virtual service (e.g. Thunderbolt Bridge, iPhone USB when
+    // not connected) failing shouldn't block a change that succeeded on the interface actually
+    // carrying traffic.
     private func setStandardDNS(services: [String], servers: [String], completion: @escaping (Bool) -> Void) {
         let dispatchGroup = DispatchGroup()
-        var allSucceeded = true
-        
+        var anySucceeded = false
+
         for service in services {
             dispatchGroup.enter()
-            
+
             let dnsArgs = servers.joined(separator: " ")
             let dnsCommand = "/usr/sbin/networksetup -setdnsservers '\(service)' \(dnsArgs)"
             let ipv6Command = "/usr/sbin/networksetup -setv6off '\(service)'; /usr/sbin/networksetup -setv6automatic '\(service)'"
             let fullCommand = "\(dnsCommand); \(ipv6Command)"
-            
+
             executeWithAuthentication(command: fullCommand) { success in
-                if !success {
-                    allSucceeded = false
+                if success {
+                    anySucceeded = true
                 }
                 dispatchGroup.leave()
             }
         }
-        
+
         dispatchGroup.notify(queue: .main) {
-            completion(allSucceeded)
+            completion(anySucceeded)
         }
     }
 
