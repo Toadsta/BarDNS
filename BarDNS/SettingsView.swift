@@ -444,6 +444,9 @@ private struct AdvancedSettingsView: View {
     @State private var isClearing = false
     @State private var cacheClearResult: CacheClearResult?
     @State private var pingResults: [DNSSpeedTester.PingResult] = []
+    /// Tracked so a second clear can cancel the first one's reset, instead of having the older
+    /// timer wipe the newer result out from under it.
+    @State private var resultResetTask: DispatchWorkItem?
 
     var body: some View {
         Form {
@@ -530,18 +533,40 @@ private struct AdvancedSettingsView: View {
     private func clearDNSCache() {
         guard !isClearing else { return }
         isClearing = true
+
+        // Captured before the async work, same reasoning as MenuBarView: the admin prompt takes
+        // focus, and the user may well have moved on by the time this finishes.
+        let successEnabled = dnsSettings.first?.successNotificationsEnabled ?? false
+        let errorEnabled = dnsSettings.first?.errorNotificationsEnabled ?? true
+
         DNSManager.shared.clearDNSCache { success in
-            DispatchQueue.main.async {
-                isClearing = false
-                withAnimation {
-                    cacheClearResult = success ? .success : .failure
-                }
-                DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                    withAnimation {
-                        cacheClearResult = nil
-                    }
-                }
+            isClearing = false
+            withAnimation {
+                cacheClearResult = success ? .success : .failure
             }
+
+            // The Notifications setting promises a notification when a cache clear succeeds or
+            // fails; before, only the menu bar shortcut delivered one and this pane stayed silent.
+            if success, successEnabled {
+                DNSNotifier.post(
+                    title: "DNS Cache Cleared",
+                    body: "The DNS cache was cleared successfully.",
+                    isFailure: false
+                )
+            } else if !success, errorEnabled {
+                DNSNotifier.post(
+                    title: "Couldn't Clear DNS Cache",
+                    body: "The DNS cache wasn't cleared. Try again from Advanced.",
+                    isFailure: true
+                )
+            }
+
+            resultResetTask?.cancel()
+            let task = DispatchWorkItem {
+                withAnimation { cacheClearResult = nil }
+            }
+            resultResetTask = task
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2, execute: task)
         }
     }
 }

@@ -20,7 +20,7 @@ A macOS menu bar app that allows you to quickly switch between different DNS pro
 - Test DNS speed to find the fastest provider
 - Clear DNS Cache
 - Launch at Login
-- Touch ID authentication for DNS changes
+- Switches DNS with no password prompt on administrator accounts
 - Native macOS menu bar integration
 - Persists your settings between app launches
 - IPv4 and IPv6 support
@@ -73,15 +73,10 @@ Since BarDNS is ad-hoc signed only (not notarized by Apple), macOS will block it
 
 BarDNS should now launch normally on every future open.
 
-## Important Note
-
-Due to macOS security requirements, administrator privileges are required each time you switch DNS settings. If you have a Touch ID-enabled Mac, you can now use Touch ID instead of password entry for authentication.
-
 ## Requirements
 
 - macOS 14.0 (Sonoma) or later
-- Administrator privileges (required for changing DNS settings)
-- Touch ID compatible Mac (for Touch ID authentication feature)
+- An administrator account (recommended — standard accounts work, but prompt for a password on every DNS change)
 
 ## Tested Configurations
 
