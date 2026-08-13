@@ -140,10 +140,30 @@ struct MenuBarView: View {
     // menu bar popover has already closed by the time the async DNS change finishes (e.g. because
     // the Touch ID / admin-password prompt stole focus and dismissed it).
     private func notifyFailure() {
+        guard dnsSettings.first?.errorNotificationsEnabled ?? true else { return }
         postNotification(
             title: "Couldn't Update DNS",
             body: "The change didn't take effect on your Mac's network settings. Try again from the menu."
         )
+    }
+
+    private func notifySuccess(type: DNSType) {
+        guard dnsSettings.first?.successNotificationsEnabled ?? false else { return }
+        postNotification(
+            title: "DNS Switched",
+            body: "Successfully connected to \(displayName(for: type))."
+        )
+    }
+
+    private func displayName(for type: DNSType) -> String {
+        switch type {
+        case .none: return "Default DNS"
+        case .cloudflare: return "Cloudflare DNS"
+        case .quad9: return "Quad9 DNS"
+        case .adguard: return "AdGuard DNS"
+        case .google: return "Google DNS"
+        case .custom(let server): return server.name
+        }
     }
 
     private func openSettings(on section: SettingsView.Section, autoRunSpeedTest: Bool = false, autoAddCustomDNS: Bool = false) {
@@ -219,6 +239,7 @@ struct MenuBarView: View {
             Task { @MainActor in
                 updateSettings(type: type)
             }
+            notifySuccess(type: type)
         } else {
             notifyFailure()
         }
@@ -251,6 +272,7 @@ struct MenuBarView: View {
                 Task { @MainActor in
                     updateSettings(type: .none)
                 }
+                notifySuccess(type: .none)
             } else {
                 notifyFailure()
             }

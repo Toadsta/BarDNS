@@ -147,6 +147,15 @@ private struct GeneralSettingsView: View {
             }
 
             Section {
+                Toggle("Error Notifications", isOn: binding(\.errorNotificationsEnabled, default: true))
+                Toggle("Success Notifications", isOn: binding(\.successNotificationsEnabled, default: false))
+            } header: {
+                Text("Notifications")
+            } footer: {
+                Text("Get notified when a DNS change succeeds or fails.")
+            }
+
+            Section {
                 HStack {
                     Text("Currently Active")
                     Spacer()
@@ -210,6 +219,18 @@ private struct GeneralSettingsView: View {
             }
             isUpdating = false
         }
+    }
+
+    private func binding(_ keyPath: ReferenceWritableKeyPath<DNSSettings, Bool>, default defaultValue: Bool) -> Binding<Bool> {
+        Binding(
+            get: { dnsSettings.first?[keyPath: keyPath] ?? defaultValue },
+            set: { newValue in
+                if let settings = dnsSettings.first {
+                    settings[keyPath: keyPath] = newValue
+                    try? modelContext.save()
+                }
+            }
+        )
     }
 }
 

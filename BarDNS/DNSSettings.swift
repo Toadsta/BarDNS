@@ -49,6 +49,8 @@ final class DNSSettings {
     var isAdGuardVisible: Bool = true
     var isGoogleEnabled: Bool = false
     var isGoogleVisible: Bool = true
+    var errorNotificationsEnabled: Bool = true
+    var successNotificationsEnabled: Bool = false
 
     init(id: String = UUID().uuidString,
          isCloudflareEnabled: Bool = false,
@@ -60,7 +62,9 @@ final class DNSSettings {
          isQuad9Visible: Bool = true,
          isAdGuardVisible: Bool = true,
          isGoogleEnabled: Bool = false,
-         isGoogleVisible: Bool = true) {
+         isGoogleVisible: Bool = true,
+         errorNotificationsEnabled: Bool = true,
+         successNotificationsEnabled: Bool = false) {
         self.id = id
         self.isCloudflareEnabled = isCloudflareEnabled
         self.isQuad9Enabled = isQuad9Enabled
@@ -72,6 +76,8 @@ final class DNSSettings {
         self.isAdGuardVisible = isAdGuardVisible
         self.isGoogleEnabled = isGoogleEnabled
         self.isGoogleVisible = isGoogleVisible
+        self.errorNotificationsEnabled = errorNotificationsEnabled
+        self.successNotificationsEnabled = successNotificationsEnabled
     }
 }
 
