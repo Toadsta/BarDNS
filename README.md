@@ -1,7 +1,7 @@
 <img src="icon.png" width="80">
 
 # BarDNS
-![stars](https://img.shields.io/github/stars/Toadsta/BarDNS) ![downloads](https://img.shields.io/github/downloads/Toadsta/BarDNS/total) ![license](https://img.shields.io/github/license/Toadsta/BarDNS)
+![stars](https://img.shields.io/github/stars/Toadsta/BarDNS) ![downloads](https://img.shields.io/github/downloads/Toadsta/BarDNS/total) ![license](https://img.shields.io/github/license/Toadsta/BarDNS) ![Code size](https://img.shields.io/github/languages/code-size/Toadsta/BarDNS)
 
 A macOS menu bar app that allows you to quickly switch between different DNS providers (or add custom ones).
 
