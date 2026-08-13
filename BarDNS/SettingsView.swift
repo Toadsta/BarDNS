@@ -427,9 +427,13 @@ private struct DNSProvidersSettingsView: View {
 private struct AdvancedSettingsView: View {
     @Query(sort: \DNSSettings.timestamp) private var dnsSettings: [DNSSettings]
     @Query(sort: \CustomDNSServer.name) private var customServers: [CustomDNSServer]
+    private enum CacheClearResult {
+        case success, failure
+    }
+
     @State private var isSpeedTesting = false
     @State private var isClearing = false
-    @State private var showClearedConfirmation = false
+    @State private var cacheClearResult: CacheClearResult?
     @State private var pingResults: [DNSSpeedTester.PingResult] = []
 
     var body: some View {
@@ -469,11 +473,19 @@ private struct AdvancedSettingsView: View {
                     }
                     .disabled(isClearing)
 
-                    if showClearedConfirmation {
+                    switch cacheClearResult {
+                    case .success:
                         Label("Cleared", systemImage: "checkmark.circle.fill")
                             .foregroundStyle(.green)
                             .font(.callout)
                             .transition(.opacity)
+                    case .failure:
+                        Label("Failed", systemImage: "xmark.circle.fill")
+                            .foregroundStyle(.red)
+                            .font(.callout)
+                            .transition(.opacity)
+                    case nil:
+                        EmptyView()
                     }
                 }
             } header: {
@@ -512,13 +524,12 @@ private struct AdvancedSettingsView: View {
         DNSManager.shared.clearDNSCache { success in
             DispatchQueue.main.async {
                 isClearing = false
-                guard success else { return }
                 withAnimation {
-                    showClearedConfirmation = true
+                    cacheClearResult = success ? .success : .failure
                 }
                 DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
                     withAnimation {
-                        showClearedConfirmation = false
+                        cacheClearResult = nil
                     }
                 }
             }
