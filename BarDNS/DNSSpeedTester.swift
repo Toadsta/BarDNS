@@ -59,27 +59,34 @@ class DNSSpeedTester {
         return tasks
     }
     
-    // Perform ping test for all DNS servers including custom ones
-    func testAllDNS(customServers: [CustomDNSServer], completion: @escaping ([PingResult]) -> Void) {
+    // Perform ping test for all DNS servers including custom ones. Hidden preset providers
+    // (per DNSSettings visibility toggles) are skipped.
+    func testAllDNS(customServers: [CustomDNSServer], settings: DNSSettings?, completion: @escaping ([PingResult]) -> Void) {
         // Safety check to prevent multiple simultaneous tests
         guard !isCurrentlyTesting else {
             completion([])
             return
         }
-        
+
         isCurrentlyTesting = true
         drainRunningTasks()
 
         let dnsManager = DNSManager.shared
-        
-        var allDNSToTest: [(String, String, Bool, String?)] = [
-            ("Cloudflare", dnsManager.cloudflareServers[0], false, nil),
-            ("Quad9", dnsManager.quad9Servers[0], false, nil),
-            ("AdGuard", dnsManager.adguardServers[0], false, nil),
-            ("Google", dnsManager.googleServers[0], false, nil)
-        ]
-        
-        
+
+        var allDNSToTest: [(String, String, Bool, String?)] = []
+        if settings?.isCloudflareVisible ?? true {
+            allDNSToTest.append(("Cloudflare", dnsManager.cloudflareServers[0], false, nil))
+        }
+        if settings?.isGoogleVisible ?? true {
+            allDNSToTest.append(("Google", dnsManager.googleServers[0], false, nil))
+        }
+        if settings?.isQuad9Visible ?? true {
+            allDNSToTest.append(("Quad9", dnsManager.quad9Servers[0], false, nil))
+        }
+        if settings?.isAdGuardVisible ?? true {
+            allDNSToTest.append(("AdGuard", dnsManager.adguardServers[0], false, nil))
+        }
+
         // Add custom DNS servers (first entry only to keep test time reasonable)
         for server in customServers {
             if let firstEntry = server.dnsEntries.first {

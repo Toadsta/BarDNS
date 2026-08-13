@@ -425,6 +425,7 @@ private struct DNSProvidersSettingsView: View {
 }
 
 private struct AdvancedSettingsView: View {
+    @Query(sort: \DNSSettings.timestamp) private var dnsSettings: [DNSSettings]
     @Query(sort: \CustomDNSServer.name) private var customServers: [CustomDNSServer]
     @State private var isSpeedTesting = false
     @State private var isClearing = false
@@ -489,7 +490,7 @@ private struct AdvancedSettingsView: View {
         guard !isSpeedTesting else { return }
         isSpeedTesting = true
         pingResults = []
-        DNSSpeedTester.shared.testAllDNS(customServers: customServers) { results in
+        DNSSpeedTester.shared.testAllDNS(customServers: customServers, settings: dnsSettings.first) { results in
             self.pingResults = results
             self.isSpeedTesting = false
         }
