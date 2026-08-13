@@ -190,7 +190,7 @@ private struct GeneralSettingsView: View {
             } header: {
                 Text("Notifications")
             } footer: {
-                Text("Get notified when a DNS change succeeds or fails.")
+                Text("Get notified when a DNS change or DNS cache clear succeeds or fails.")
             }
         }
         .formStyle(.grouped)
