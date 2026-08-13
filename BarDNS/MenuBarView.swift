@@ -17,15 +17,6 @@ struct MenuBarView: View {
     @Query(sort: \CustomDNSServer.name) private var customServers: [CustomDNSServer]
     @State private var isUpdating = false
 
-    private var isDefaultDNSActive: Bool {
-        guard let settings = dnsSettings.first else { return true }
-        return !settings.isCloudflareEnabled &&
-            !settings.isQuad9Enabled &&
-            !settings.isAdGuardEnabled &&
-            !settings.isGoogleEnabled &&
-            settings.activeCustomDNSID == nil
-    }
-
     private var hasVisiblePresets: Bool {
         (dnsSettings.first?.isCloudflareVisible ?? true) ||
         (dnsSettings.first?.isQuad9Visible ?? true) ||
@@ -92,7 +83,7 @@ struct MenuBarView: View {
 
                 dnsToggleRow(
                     label: "Default DNS",
-                    isOn: isDefaultDNSActive,
+                    isOn: dnsSettings.first?.isDefaultActive ?? true,
                     action: { disableDNSOverride() }
                 )
 
@@ -213,65 +204,38 @@ struct MenuBarView: View {
         }
     }
 
+    private func presetServers(for type: DNSType) -> [String] {
+        switch type {
+        case .cloudflare: return DNSManager.shared.cloudflareServers
+        case .quad9: return DNSManager.shared.quad9Servers
+        case .adguard: return DNSManager.shared.adguardServers
+        case .google: return DNSManager.shared.googleServers
+        case .custom, .none: return []
+        }
+    }
+
+    private func handleActivationResult(success: Bool, type: DNSType) {
+        if success {
+            Task { @MainActor in
+                updateSettings(type: type)
+            }
+        } else {
+            notifyFailure()
+        }
+        isUpdating = false
+    }
+
     private func activateDNS(type: DNSType) {
         isUpdating = true
 
         switch type {
-        case .cloudflare:
-            DNSManager.shared.setPredefinedDNS(dnsServers: DNSManager.shared.cloudflareServers) { success in
-                if success {
-                    Task { @MainActor in
-                        updateSettings(type: type)
-                    }
-                } else {
-                    notifyFailure()
-                }
-                isUpdating = false
-            }
-        case .quad9:
-            DNSManager.shared.setPredefinedDNS(dnsServers: DNSManager.shared.quad9Servers) { success in
-                if success {
-                    Task { @MainActor in
-                        updateSettings(type: type)
-                    }
-                } else {
-                    notifyFailure()
-                }
-                isUpdating = false
-            }
-        case .adguard:
-            DNSManager.shared.setPredefinedDNS(dnsServers: DNSManager.shared.adguardServers) { success in
-                if success {
-                    Task { @MainActor in
-                        updateSettings(type: type)
-                    }
-                } else {
-                    notifyFailure()
-                }
-                isUpdating = false
-            }
-        case .google:
-            DNSManager.shared.setPredefinedDNS(dnsServers: DNSManager.shared.googleServers) { success in
-                if success {
-                    Task { @MainActor in
-                        updateSettings(type: type)
-                    }
-                } else {
-                    notifyFailure()
-                }
-                isUpdating = false
+        case .cloudflare, .quad9, .adguard, .google:
+            DNSManager.shared.setPredefinedDNS(dnsServers: presetServers(for: type)) { success in
+                handleActivationResult(success: success, type: type)
             }
         case .custom(let server):
             DNSManager.shared.setCustomDNS(servers: server.dnsEntries) { success in
-                if success {
-                    Task { @MainActor in
-                        updateSettings(type: type)
-                    }
-                } else {
-                    notifyFailure()
-                }
-                isUpdating = false
-
+                handleActivationResult(success: success, type: type)
             }
         case .none:
             updateSettings(type: type)

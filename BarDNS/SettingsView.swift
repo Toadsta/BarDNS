@@ -116,14 +116,6 @@ private struct GeneralSettingsView: View {
         return "Default DNS"
     }
 
-    private var isDefaultDNSActive: Bool {
-        guard let settings = dnsSettings.first else { return true }
-        return !settings.isCloudflareEnabled &&
-            !settings.isQuad9Enabled &&
-            !settings.isAdGuardEnabled &&
-            !settings.isGoogleEnabled &&
-            settings.activeCustomDNSID == nil
-    }
 
     var body: some View {
         Form {
@@ -165,7 +157,7 @@ private struct GeneralSettingsView: View {
                 HStack {
                     Text("Default DNS")
                     Spacer()
-                    if isDefaultDNSActive {
+                    if dnsSettings.first?.isDefaultActive ?? true {
                         Text("Active")
                             .foregroundStyle(.secondary)
                     } else {
@@ -389,13 +381,18 @@ private struct DNSProvidersSettingsView: View {
         modelContext.delete(server)
         try? modelContext.save()
 
-        if wasActive, let settings = dnsSettings.first {
-            DNSManager.shared.disableDNS { success in
-                if success {
-                    Task { @MainActor in
-                        settings.resetToDefault()
-                        try? modelContext.save()
-                    }
+        guard wasActive, let settings = dnsSettings.first else { return }
+
+        // The server object is gone either way, so activeCustomDNSID can never resolve to
+        // anything again — reset it regardless of whether disableDNS succeeded. If it failed,
+        // the Mac's actual network settings may still be pointed at the deleted addresses, so
+        // still surface that to the user.
+        DNSManager.shared.disableDNS { success in
+            Task { @MainActor in
+                settings.resetToDefault()
+                try? modelContext.save()
+                if !success {
+                    showUpdateFailedAlert = true
                 }
             }
         }
@@ -429,7 +426,7 @@ private struct AdvancedSettingsView: View {
                         HStack {
                             Text(result.dnsName)
                             Spacer()
-                            Text(result.isSuccess ? "\(Int(result.responseTime))ms" : "Failed")
+                            Text(result.responseTime.map { "\(Int($0.rounded()))ms" } ?? "Failed")
                                 .foregroundStyle(.secondary)
                         }
                     }

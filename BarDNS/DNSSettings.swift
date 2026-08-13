@@ -85,6 +85,15 @@ extension DNSSettings {
         activeCustomDNSID = nil
         timestamp = Date()
     }
+
+    /// True when no preset or custom DNS override is active.
+    var isDefaultActive: Bool {
+        !isCloudflareEnabled &&
+            !isQuad9Enabled &&
+            !isAdGuardEnabled &&
+            !isGoogleEnabled &&
+            activeCustomDNSID == nil
+    }
 }
 
 extension CustomDNSServer {

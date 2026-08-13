@@ -44,39 +44,18 @@ final class DNSManagerTests: XCTestCase {
     // MARK: - parseDNSServer
 
     func testParsesPlainIPv4() {
-        let result = manager.parseDNSServer("8.8.8.8")
-        XCTAssertEqual(result?.address, "8.8.8.8")
-        XCTAssertNil(result?.port)
-    }
-
-    func testParsesIPv4WithPort() {
-        let result = manager.parseDNSServer("127.0.0.1:5353")
-        XCTAssertEqual(result?.address, "127.0.0.1")
-        XCTAssertEqual(result?.port, 5353)
+        XCTAssertEqual(manager.parseDNSServer("8.8.8.8"), "8.8.8.8")
     }
 
     func testParsesPlainIPv6() {
-        let result = manager.parseDNSServer("2001:4860:4860::8888")
-        XCTAssertEqual(result?.address, "2001:4860:4860::8888")
-        XCTAssertNil(result?.port)
+        XCTAssertEqual(manager.parseDNSServer("2001:4860:4860::8888"), "2001:4860:4860::8888")
     }
 
-    func testParsesBracketedIPv6WithPort() {
-        let result = manager.parseDNSServer("[2001:4860:4860::8888]:53")
-        XCTAssertEqual(result?.address, "2001:4860:4860::8888")
-        XCTAssertEqual(result?.port, 53)
-    }
-
-    func testParsesBracketedIPv6WithoutPort() {
-        let result = manager.parseDNSServer("[2001:4860:4860::8888]")
-        XCTAssertEqual(result?.address, "2001:4860:4860::8888")
-        XCTAssertNil(result?.port)
-    }
-
-    func testRejectsInvalidPortNumbers() {
-        XCTAssertNil(manager.parseDNSServer("127.0.0.1:0"))
-        XCTAssertNil(manager.parseDNSServer("127.0.0.1:70000"))
-        XCTAssertNil(manager.parseDNSServer("127.0.0.1:not-a-port"))
+    func testRejectsAddressWithPort() {
+        // macOS's system-wide DNS config has no way to honor a non-standard port, so
+        // custom DNS entries only ever support bare addresses.
+        XCTAssertNil(manager.parseDNSServer("127.0.0.1:5353"))
+        XCTAssertNil(manager.parseDNSServer("[2001:4860:4860::8888]:53"))
     }
 
     func testRejectsShellInjectionAttempts() {
@@ -98,7 +77,6 @@ final class DNSManagerTests: XCTestCase {
     }
 
     func testTrimsWhitespace() {
-        let result = manager.parseDNSServer("  8.8.8.8  ")
-        XCTAssertEqual(result?.address, "8.8.8.8")
+        XCTAssertEqual(manager.parseDNSServer("  8.8.8.8  "), "8.8.8.8")
     }
 }
