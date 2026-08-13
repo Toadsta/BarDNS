@@ -429,6 +429,7 @@ private struct AdvancedSettingsView: View {
     @Query(sort: \CustomDNSServer.name) private var customServers: [CustomDNSServer]
     @State private var isSpeedTesting = false
     @State private var isClearing = false
+    @State private var showClearedConfirmation = false
     @State private var pingResults: [DNSSpeedTester.PingResult] = []
 
     var body: some View {
@@ -462,10 +463,19 @@ private struct AdvancedSettingsView: View {
             }
 
             Section {
-                Button(isClearing ? "Clearing DNS Cache…" : "Clear DNS Cache") {
-                    clearDNSCache()
+                HStack {
+                    Button(isClearing ? "Clearing DNS Cache…" : "Clear DNS Cache") {
+                        clearDNSCache()
+                    }
+                    .disabled(isClearing)
+
+                    if showClearedConfirmation {
+                        Label("Cleared", systemImage: "checkmark.circle.fill")
+                            .foregroundStyle(.green)
+                            .font(.callout)
+                            .transition(.opacity)
+                    }
                 }
-                .disabled(isClearing)
             } header: {
                 Text("Maintenance")
             }
@@ -499,9 +509,18 @@ private struct AdvancedSettingsView: View {
     private func clearDNSCache() {
         guard !isClearing else { return }
         isClearing = true
-        DNSManager.shared.clearDNSCache { _ in
+        DNSManager.shared.clearDNSCache { success in
             DispatchQueue.main.async {
                 isClearing = false
+                guard success else { return }
+                withAnimation {
+                    showClearedConfirmation = true
+                }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                    withAnimation {
+                        showClearedConfirmation = false
+                    }
+                }
             }
         }
     }
