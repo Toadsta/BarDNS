@@ -169,34 +169,11 @@ class DNSSpeedTester {
         cancelTests()
     }
     
-    // Strips any port suffix and detects IPv6, since ping only understands bare addresses
-    // and IPv6 requires ping6 on macOS.
+    // Detects IPv6 vs IPv4, since IPv6 requires ping6 on macOS. DNS entries are always plain
+    // addresses (no port syntax is ever accepted), so no port/bracket handling is needed here.
     func resolvePingTarget(_ server: String) -> (host: String, isIPv6: Bool) {
         let address = server.trimmingCharacters(in: .whitespacesAndNewlines)
-
-        // Bracketed IPv6 with optional port, e.g. [2001:db8::1]:53
-        if address.hasPrefix("["), let closingBracket = address.firstIndex(of: "]") {
-            let host = String(address[address.index(after: address.startIndex)..<closingBracket])
-            return (host, true)
-        }
-
-        let colonCount = address.filter { $0 == ":" }.count
-
-        // IPv4 with port, e.g. 127.0.0.1:5353 (single colon, numeric suffix)
-        if colonCount == 1, let colonIndex = address.firstIndex(of: ":") {
-            let host = String(address[address.startIndex..<colonIndex])
-            let port = address[address.index(after: colonIndex)...]
-            if Int(port) != nil {
-                return (host, false)
-            }
-        }
-
-        // Plain IPv6 (multiple colons, no brackets)
-        if colonCount > 1 {
-            return (address, true)
-        }
-
-        return (address, false)
+        return (address, address.contains(":"))
     }
 
     // Measure ping time to a DNS server with safer implementation. Returns nil on failure.

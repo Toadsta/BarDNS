@@ -17,26 +17,8 @@ final class DNSSpeedTesterTests: XCTestCase {
         XCTAssertFalse(result.isIPv6)
     }
 
-    func testIPv4WithPortStripsThePort() {
-        let result = tester.resolvePingTarget("127.0.0.1:5353")
-        XCTAssertEqual(result.host, "127.0.0.1")
-        XCTAssertFalse(result.isIPv6)
-    }
-
     func testPlainIPv6IsDetected() {
         let result = tester.resolvePingTarget("2001:4860:4860::8888")
-        XCTAssertEqual(result.host, "2001:4860:4860::8888")
-        XCTAssertTrue(result.isIPv6)
-    }
-
-    func testBracketedIPv6WithPortStripsBracketsAndPort() {
-        let result = tester.resolvePingTarget("[2001:4860:4860::8888]:53")
-        XCTAssertEqual(result.host, "2001:4860:4860::8888")
-        XCTAssertTrue(result.isIPv6)
-    }
-
-    func testBracketedIPv6WithoutPort() {
-        let result = tester.resolvePingTarget("[2001:4860:4860::8888]")
         XCTAssertEqual(result.host, "2001:4860:4860::8888")
         XCTAssertTrue(result.isIPv6)
     }
