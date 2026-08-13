@@ -17,16 +17,14 @@ class DNSSpeedTester {
         let id = UUID()
         let dnsName: String
         let server: String
-        let responseTime: Double // in milliseconds
-        let isSuccess: Bool
+        let responseTime: Double? // in milliseconds; nil means the ping failed
         let isCustom: Bool
         let customID: String?
-        
-        init(dnsName: String, server: String, responseTime: Double, isSuccess: Bool, isCustom: Bool = false, customID: String? = nil) {
+
+        init(dnsName: String, server: String, responseTime: Double?, isCustom: Bool = false, customID: String? = nil) {
             self.dnsName = dnsName
             self.server = server
             self.responseTime = responseTime
-            self.isSuccess = isSuccess
             self.isCustom = isCustom
             self.customID = customID
         }
@@ -61,27 +59,34 @@ class DNSSpeedTester {
         return tasks
     }
     
-    // Perform ping test for all DNS servers including custom ones
-    func testAllDNS(customServers: [CustomDNSServer], completion: @escaping ([PingResult]) -> Void) {
+    // Perform ping test for all DNS servers including custom ones. Hidden preset providers
+    // (per DNSSettings visibility toggles) are skipped.
+    func testAllDNS(customServers: [CustomDNSServer], settings: DNSSettings?, completion: @escaping ([PingResult]) -> Void) {
         // Safety check to prevent multiple simultaneous tests
         guard !isCurrentlyTesting else {
             completion([])
             return
         }
-        
+
         isCurrentlyTesting = true
         drainRunningTasks()
 
         let dnsManager = DNSManager.shared
-        
-        var allDNSToTest: [(String, String, Bool, String?)] = [
-            ("Cloudflare", dnsManager.cloudflareServers[0], false, nil),
-            ("Quad9", dnsManager.quad9Servers[0], false, nil),
-            ("AdGuard", dnsManager.adguardServers[0], false, nil),
-            ("Google", dnsManager.googleServers[0], false, nil)
-        ]
-        
-        
+
+        var allDNSToTest: [(String, String, Bool, String?)] = []
+        if settings?.isCloudflareVisible ?? true {
+            allDNSToTest.append(("Cloudflare", dnsManager.cloudflareServers[0], false, nil))
+        }
+        if settings?.isGoogleVisible ?? true {
+            allDNSToTest.append(("Google", dnsManager.googleServers[0], false, nil))
+        }
+        if settings?.isQuad9Visible ?? true {
+            allDNSToTest.append(("Quad9", dnsManager.quad9Servers[0], false, nil))
+        }
+        if settings?.isAdGuardVisible ?? true {
+            allDNSToTest.append(("AdGuard", dnsManager.adguardServers[0], false, nil))
+        }
+
         // Add custom DNS servers (first entry only to keep test time reasonable)
         for server in customServers {
             if let firstEntry = server.dnsEntries.first {
@@ -91,7 +96,6 @@ class DNSSpeedTester {
         
         // Use serial queue to avoid overwhelming the system
         let queue = DispatchQueue(label: "com.glinford.DNSSpeedTest", qos: .userInitiated)
-        let resultsQueue = DispatchQueue(label: "com.glinford.DNSSpeedTestResults", attributes: .concurrent)
         let resultsLock = NSLock()
         var results: [PingResult] = []
         let group = DispatchGroup()
@@ -112,23 +116,20 @@ class DNSSpeedTester {
                 
                 semaphore.wait() // Wait for a slot to become available
                 
-                self.pingServer(server: server) { responseTime, isSuccess in
-                    resultsQueue.async {
-                        resultsLock.lock()
-                        let result = PingResult(
-                            dnsName: name,
-                            server: server,
-                            responseTime: responseTime,
-                            isSuccess: isSuccess,
-                            isCustom: isCustom,
-                            customID: customID
-                        )
-                        results.append(result)
-                        resultsLock.unlock()
-                        
-                        semaphore.signal() // Release the slot
-                        group.leave()
-                    }
+                self.pingServer(server: server) { responseTime in
+                    let result = PingResult(
+                        dnsName: name,
+                        server: server,
+                        responseTime: responseTime,
+                        isCustom: isCustom,
+                        customID: customID
+                    )
+                    resultsLock.lock()
+                    results.append(result)
+                    resultsLock.unlock()
+
+                    semaphore.signal() // Release the slot
+                    group.leave()
                 }
             }
         }
@@ -142,8 +143,15 @@ class DNSSpeedTester {
             }
             self.isCurrentlyTesting = false
 
-            // Sort results by response time
-            let sortedResults = results.sorted { $0.responseTime < $1.responseTime }
+            // Sort by response time, ascending; failures (nil) always sort last regardless of value
+            let sortedResults = results.sorted { lhs, rhs in
+                switch (lhs.responseTime, rhs.responseTime) {
+                case let (l?, r?): return l < r
+                case (nil, _?): return false
+                case (_?, nil): return true
+                case (nil, nil): return false
+                }
+            }
             completion(sortedResults)
         }
     }
@@ -161,38 +169,15 @@ class DNSSpeedTester {
         cancelTests()
     }
     
-    // Strips any port suffix and detects IPv6, since ping only understands bare addresses
-    // and IPv6 requires ping6 on macOS.
+    // Detects IPv6 vs IPv4, since IPv6 requires ping6 on macOS. DNS entries are always plain
+    // addresses (no port syntax is ever accepted), so no port/bracket handling is needed here.
     func resolvePingTarget(_ server: String) -> (host: String, isIPv6: Bool) {
         let address = server.trimmingCharacters(in: .whitespacesAndNewlines)
-
-        // Bracketed IPv6 with optional port, e.g. [2001:db8::1]:53
-        if address.hasPrefix("["), let closingBracket = address.firstIndex(of: "]") {
-            let host = String(address[address.index(after: address.startIndex)..<closingBracket])
-            return (host, true)
-        }
-
-        let colonCount = address.filter { $0 == ":" }.count
-
-        // IPv4 with port, e.g. 127.0.0.1:5353 (single colon, numeric suffix)
-        if colonCount == 1, let colonIndex = address.firstIndex(of: ":") {
-            let host = String(address[address.startIndex..<colonIndex])
-            let port = address[address.index(after: colonIndex)...]
-            if Int(port) != nil {
-                return (host, false)
-            }
-        }
-
-        // Plain IPv6 (multiple colons, no brackets)
-        if colonCount > 1 {
-            return (address, true)
-        }
-
-        return (address, false)
+        return (address, address.contains(":"))
     }
 
-    // Measure ping time to a DNS server with safer implementation
-    private func pingServer(server: String, completion: @escaping (Double, Bool) -> Void) {
+    // Measure ping time to a DNS server with safer implementation. Returns nil on failure.
+    private func pingServer(server: String, completion: @escaping (Double?) -> Void) {
         let (host, isIPv6) = resolvePingTarget(server)
 
         let task = Process()
@@ -232,7 +217,7 @@ class DNSSpeedTester {
                             let values = stats.components(separatedBy: "/")
                             if values.count >= 2 {
                                 if let avgTime = Double(values[1].trimmingCharacters(in: .whitespaces)) {
-                                    completion(avgTime, true)
+                                    completion(avgTime)
                                     return
                                 }
                             }
@@ -240,17 +225,17 @@ class DNSSpeedTester {
                     }
                 }
                 // If we get here, parsing failed
-                completion(999, false)
+                completion(nil)
             } else {
-                completion(999, false) // Ping failed
+                completion(nil) // Ping failed
             }
         }
-        
+
         do {
             try task.run()
         } catch {
             removeRunningTask(task)
-            completion(999, false) // Process failed to start
+            completion(nil) // Process failed to start
         }
     }
     

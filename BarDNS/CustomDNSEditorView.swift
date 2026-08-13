@@ -36,10 +36,21 @@ struct CustomDNSEditorView: View {
             .filter { !$0.isEmpty }
     }
 
-    private var invalidEntries: [String] {
-        let allEntries = entries(from: primaryDNS) + entries(from: secondaryDNS) +
-            entries(from: tertiaryDNS) + entries(from: quaternaryDNS)
-        return allEntries.filter { DNSManager.shared.parseDNSServer($0) == nil }
+    private func invalidEntries(in field: String) -> [String] {
+        entries(from: field).filter { DNSManager.shared.parseDNSServer($0) == nil }
+    }
+
+    private func errorText(for field: String) -> String? {
+        let invalid = invalidEntries(in: field)
+        guard !invalid.isEmpty else { return nil }
+        return "Not a valid IPv4/IPv6 address: \(invalid.joined(separator: ", "))"
+    }
+
+    private var hasAnyInvalidEntries: Bool {
+        !invalidEntries(in: primaryDNS).isEmpty ||
+            !invalidEntries(in: secondaryDNS).isEmpty ||
+            !invalidEntries(in: tertiaryDNS).isEmpty ||
+            !invalidEntries(in: quaternaryDNS).isEmpty
     }
 
     var body: some View {
@@ -50,27 +61,10 @@ struct CustomDNSEditorView: View {
             TextField("Name (e.g. Work DNS)", text: $name)
                 .textFieldStyle(.roundedBorder)
 
-            TextField("Primary DNS (e.g. 8.8.8.8 or 127.0.0.1:5353)", text: $primaryDNS)
-                .textFieldStyle(.roundedBorder)
-                .help("Use comma to add multiple addresses. For custom ports on IPv4, add colon and port number (e.g., 127.0.0.1:5353)")
-
-            TextField("Secondary DNS (optional)", text: $secondaryDNS)
-                .textFieldStyle(.roundedBorder)
-                .help("Use comma to add multiple addresses. For custom ports on IPv4, add colon and port number (e.g., 127.0.0.1:5353)")
-
-            TextField("Third DNS (IPv6 or IPv4, optional)", text: $tertiaryDNS)
-                .textFieldStyle(.roundedBorder)
-                .help("Tip: bracket IPv6 if adding a port, e.g., [2001:4860:4860::8888]:5353")
-
-            TextField("Fourth DNS (IPv6 or IPv4, optional)", text: $quaternaryDNS)
-                .textFieldStyle(.roundedBorder)
-                .help("Use comma to add multiple IPv6 entries if needed")
-
-            if !invalidEntries.isEmpty {
-                Text("Not a valid IPv4/IPv6 address: \(invalidEntries.joined(separator: ", "))")
-                    .font(.caption)
-                    .foregroundStyle(.red)
-            }
+            dnsField(placeholder: "Primary DNS (e.g. 8.8.8.8)", text: $primaryDNS)
+            dnsField(placeholder: "Secondary DNS (optional)", text: $secondaryDNS)
+            dnsField(placeholder: "Third DNS (IPv6 or IPv4, optional)", text: $tertiaryDNS)
+            dnsField(placeholder: "Fourth DNS (IPv6 or IPv4, optional)", text: $quaternaryDNS)
 
             HStack {
                 Button("Cancel") {
@@ -95,10 +89,24 @@ struct CustomDNSEditorView: View {
                 .keyboardShortcut(.return)
                 .disabled(name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ||
                           primaryDNS.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ||
-                          !invalidEntries.isEmpty)
+                          hasAnyInvalidEntries)
             }
         }
         .padding()
         .frame(width: 360)
+    }
+
+    @ViewBuilder
+    private func dnsField(placeholder: String, text: Binding<String>) -> some View {
+        VStack(alignment: .leading, spacing: 2) {
+            TextField(placeholder, text: text)
+                .textFieldStyle(.roundedBorder)
+                .help("Use comma to add multiple addresses")
+            if let error = errorText(for: text.wrappedValue) {
+                Text(error)
+                    .font(.caption)
+                    .foregroundStyle(.red)
+            }
+        }
     }
 }

@@ -43,24 +43,28 @@ final class DNSSettings {
     var isQuad9Enabled: Bool
     var activeCustomDNSID: String?
     var timestamp: Date
-    var isAdGuardEnabled: Bool?
+    var isAdGuardEnabled: Bool = false
     var isCloudflareVisible: Bool = true
     var isQuad9Visible: Bool = true
     var isAdGuardVisible: Bool = true
-    var isGoogleEnabled: Bool?
+    var isGoogleEnabled: Bool = false
     var isGoogleVisible: Bool = true
+    var errorNotificationsEnabled: Bool = true
+    var successNotificationsEnabled: Bool = false
 
     init(id: String = UUID().uuidString,
          isCloudflareEnabled: Bool = false,
          isQuad9Enabled: Bool = false,
          activeCustomDNSID: String? = nil,
          timestamp: Date = Date(),
-         isAdGuardEnabled: Bool? = false,
+         isAdGuardEnabled: Bool = false,
          isCloudflareVisible: Bool = true,
          isQuad9Visible: Bool = true,
          isAdGuardVisible: Bool = true,
-         isGoogleEnabled: Bool? = false,
-         isGoogleVisible: Bool = true) {
+         isGoogleEnabled: Bool = false,
+         isGoogleVisible: Bool = true,
+         errorNotificationsEnabled: Bool = true,
+         successNotificationsEnabled: Bool = false) {
         self.id = id
         self.isCloudflareEnabled = isCloudflareEnabled
         self.isQuad9Enabled = isQuad9Enabled
@@ -72,6 +76,8 @@ final class DNSSettings {
         self.isAdGuardVisible = isAdGuardVisible
         self.isGoogleEnabled = isGoogleEnabled
         self.isGoogleVisible = isGoogleVisible
+        self.errorNotificationsEnabled = errorNotificationsEnabled
+        self.successNotificationsEnabled = successNotificationsEnabled
     }
 }
 
@@ -80,10 +86,19 @@ extension DNSSettings {
     func resetToDefault() {
         isCloudflareEnabled = false
         isQuad9Enabled = false
-        isAdGuardEnabled = nil
-        isGoogleEnabled = nil
+        isAdGuardEnabled = false
+        isGoogleEnabled = false
         activeCustomDNSID = nil
         timestamp = Date()
+    }
+
+    /// True when no preset or custom DNS override is active.
+    var isDefaultActive: Bool {
+        !isCloudflareEnabled &&
+            !isQuad9Enabled &&
+            !isAdGuardEnabled &&
+            !isGoogleEnabled &&
+            activeCustomDNSID == nil
     }
 }
 

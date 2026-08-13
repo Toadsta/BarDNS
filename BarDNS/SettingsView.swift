@@ -38,8 +38,17 @@ struct SettingsView: View {
             switch self {
             case .general: return .gray
             case .dnsProviders: return .blue
-            case .advanced: return .purple
+            case .advanced: return .orange
             case .about: return .gray
+            }
+        }
+
+        // wrench.and.screwdriver.fill renders visually larger than the other glyphs at the
+        // same point size, so it gets a smaller size to look consistent in the badge.
+        var iconSize: CGFloat {
+            switch self {
+            case .advanced: return 9
+            default: return 11
             }
         }
     }
@@ -57,7 +66,7 @@ struct SettingsView: View {
                         .frame(width: 22, height: 22)
                         .overlay {
                             Image(systemName: section.icon)
-                                .font(.system(size: 11, weight: .semibold))
+                                .font(.system(size: section.iconSize, weight: .semibold))
                                 .foregroundStyle(.white)
                         }
                 }
@@ -107,8 +116,8 @@ private struct GeneralSettingsView: View {
         guard let settings = dnsSettings.first else { return "Default DNS" }
         if settings.isCloudflareEnabled { return "Cloudflare DNS" }
         if settings.isQuad9Enabled { return "Quad9 DNS" }
-        if settings.isAdGuardEnabled ?? false { return "AdGuard DNS" }
-        if settings.isGoogleEnabled ?? false { return "Google DNS" }
+        if settings.isAdGuardEnabled { return "AdGuard DNS" }
+        if settings.isGoogleEnabled { return "Google DNS" }
         if let activeID = settings.activeCustomDNSID,
            let server = customServers.first(where: { $0.id == activeID }) {
             return server.name
@@ -116,14 +125,6 @@ private struct GeneralSettingsView: View {
         return "Default DNS"
     }
 
-    private var isDefaultDNSActive: Bool {
-        guard let settings = dnsSettings.first else { return true }
-        return !settings.isCloudflareEnabled &&
-            !settings.isQuad9Enabled &&
-            !(settings.isAdGuardEnabled ?? false) &&
-            !(settings.isGoogleEnabled ?? false) &&
-            settings.activeCustomDNSID == nil
-    }
 
     var body: some View {
         Form {
@@ -148,13 +149,6 @@ private struct GeneralSettingsView: View {
             }
 
             Section {
-                Toggle("Launch at Login", isOn: $launchAtLogin)
-                    .onChange(of: launchAtLogin) { _, newValue in
-                        setLaunchAtLogin(newValue)
-                    }
-            }
-
-            Section {
                 HStack {
                     Text("Currently Active")
                     Spacer()
@@ -165,7 +159,7 @@ private struct GeneralSettingsView: View {
                 HStack {
                     Text("Default DNS")
                     Spacer()
-                    if isDefaultDNSActive {
+                    if dnsSettings.first?.isDefaultActive ?? true {
                         Text("Active")
                             .foregroundStyle(.secondary)
                     } else {
@@ -175,8 +169,28 @@ private struct GeneralSettingsView: View {
                         .disabled(isUpdating)
                     }
                 }
+            } header: {
+                Text("DNS Status")
             } footer: {
                 Text("Reverts your Mac to the DNS servers provided automatically by your router or ISP.")
+            }
+
+            Section {
+                Toggle("Launch at Login", isOn: $launchAtLogin)
+                    .onChange(of: launchAtLogin) { _, newValue in
+                        setLaunchAtLogin(newValue)
+                    }
+            } header: {
+                Text("Startup")
+            }
+
+            Section {
+                Toggle("Error Notifications", isOn: binding(\.errorNotificationsEnabled, default: true))
+                Toggle("Success Notifications", isOn: binding(\.successNotificationsEnabled, default: false))
+            } header: {
+                Text("Notifications")
+            } footer: {
+                Text("Get notified when a DNS change succeeds or fails.")
             }
         }
         .formStyle(.grouped)
@@ -218,6 +232,18 @@ private struct GeneralSettingsView: View {
             }
             isUpdating = false
         }
+    }
+
+    private func binding(_ keyPath: ReferenceWritableKeyPath<DNSSettings, Bool>, default defaultValue: Bool) -> Binding<Bool> {
+        Binding(
+            get: { dnsSettings.first?[keyPath: keyPath] ?? defaultValue },
+            set: { newValue in
+                if let settings = dnsSettings.first {
+                    settings[keyPath: keyPath] = newValue
+                    try? modelContext.save()
+                }
+            }
+        )
     }
 }
 
@@ -389,13 +415,18 @@ private struct DNSProvidersSettingsView: View {
         modelContext.delete(server)
         try? modelContext.save()
 
-        if wasActive, let settings = dnsSettings.first {
-            DNSManager.shared.disableDNS { success in
-                if success {
-                    Task { @MainActor in
-                        settings.resetToDefault()
-                        try? modelContext.save()
-                    }
+        guard wasActive, let settings = dnsSettings.first else { return }
+
+        // The server object is gone either way, so activeCustomDNSID can never resolve to
+        // anything again — reset it regardless of whether disableDNS succeeded. If it failed,
+        // the Mac's actual network settings may still be pointed at the deleted addresses, so
+        // still surface that to the user.
+        DNSManager.shared.disableDNS { success in
+            Task { @MainActor in
+                settings.resetToDefault()
+                try? modelContext.save()
+                if !success {
+                    showUpdateFailedAlert = true
                 }
             }
         }
@@ -403,9 +434,15 @@ private struct DNSProvidersSettingsView: View {
 }
 
 private struct AdvancedSettingsView: View {
+    @Query(sort: \DNSSettings.timestamp) private var dnsSettings: [DNSSettings]
     @Query(sort: \CustomDNSServer.name) private var customServers: [CustomDNSServer]
+    private enum CacheClearResult {
+        case success, failure
+    }
+
     @State private var isSpeedTesting = false
     @State private var isClearing = false
+    @State private var cacheClearResult: CacheClearResult?
     @State private var pingResults: [DNSSpeedTester.PingResult] = []
 
     var body: some View {
@@ -429,7 +466,7 @@ private struct AdvancedSettingsView: View {
                         HStack {
                             Text(result.dnsName)
                             Spacer()
-                            Text(result.isSuccess ? "\(Int(result.responseTime))ms" : "Failed")
+                            Text(result.responseTime.map { "\(Int($0.rounded()))ms" } ?? "Failed")
                                 .foregroundStyle(.secondary)
                         }
                     }
@@ -439,10 +476,27 @@ private struct AdvancedSettingsView: View {
             }
 
             Section {
-                Button(isClearing ? "Clearing DNS Cache…" : "Clear DNS Cache") {
-                    clearDNSCache()
+                HStack {
+                    Button(isClearing ? "Clearing DNS Cache…" : "Clear DNS Cache") {
+                        clearDNSCache()
+                    }
+                    .disabled(isClearing)
+
+                    switch cacheClearResult {
+                    case .success:
+                        Label("Cleared", systemImage: "checkmark.circle.fill")
+                            .foregroundStyle(.green)
+                            .font(.callout)
+                            .transition(.opacity)
+                    case .failure:
+                        Label("Failed", systemImage: "xmark.circle.fill")
+                            .foregroundStyle(.red)
+                            .font(.callout)
+                            .transition(.opacity)
+                    case nil:
+                        EmptyView()
+                    }
                 }
-                .disabled(isClearing)
             } header: {
                 Text("Maintenance")
             }
@@ -467,7 +521,7 @@ private struct AdvancedSettingsView: View {
         guard !isSpeedTesting else { return }
         isSpeedTesting = true
         pingResults = []
-        DNSSpeedTester.shared.testAllDNS(customServers: customServers) { results in
+        DNSSpeedTester.shared.testAllDNS(customServers: customServers, settings: dnsSettings.first) { results in
             self.pingResults = results
             self.isSpeedTesting = false
         }
@@ -476,9 +530,17 @@ private struct AdvancedSettingsView: View {
     private func clearDNSCache() {
         guard !isClearing else { return }
         isClearing = true
-        DNSManager.shared.clearDNSCache { _ in
+        DNSManager.shared.clearDNSCache { success in
             DispatchQueue.main.async {
                 isClearing = false
+                withAnimation {
+                    cacheClearResult = success ? .success : .failure
+                }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                    withAnimation {
+                        cacheClearResult = nil
+                    }
+                }
             }
         }
     }

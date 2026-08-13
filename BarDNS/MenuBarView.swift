@@ -7,6 +7,7 @@
 //
 import SwiftUI
 import SwiftData
+import AppKit
 import UserNotifications
 
 struct MenuBarView: View {
@@ -15,15 +16,6 @@ struct MenuBarView: View {
     @Query(sort: \DNSSettings.timestamp) private var dnsSettings: [DNSSettings]
     @Query(sort: \CustomDNSServer.name) private var customServers: [CustomDNSServer]
     @State private var isUpdating = false
-
-    private var isDefaultDNSActive: Bool {
-        guard let settings = dnsSettings.first else { return true }
-        return !settings.isCloudflareEnabled &&
-            !settings.isQuad9Enabled &&
-            !(settings.isAdGuardEnabled ?? false) &&
-            !(settings.isGoogleEnabled ?? false) &&
-            settings.activeCustomDNSID == nil
-    }
 
     private var hasVisiblePresets: Bool {
         (dnsSettings.first?.isCloudflareVisible ?? true) ||
@@ -40,7 +32,8 @@ struct MenuBarView: View {
                     dnsToggleRow(
                         label: server.name,
                         isOn: dnsSettings.first?.activeCustomDNSID == server.id,
-                        action: { activateDNS(type: .custom(server)) }
+                        action: { activateDNS(type: .custom(server)) },
+                        offAction: disableDNSOverride
                     )
                 }
 
@@ -52,7 +45,8 @@ struct MenuBarView: View {
                     dnsToggleRow(
                         label: "Cloudflare DNS",
                         isOn: dnsSettings.first?.isCloudflareEnabled ?? false,
-                        action: { activateDNS(type: .cloudflare) }
+                        action: { activateDNS(type: .cloudflare) },
+                        offAction: disableDNSOverride
                     )
                 }
 
@@ -60,7 +54,8 @@ struct MenuBarView: View {
                     dnsToggleRow(
                         label: "Google DNS",
                         isOn: dnsSettings.first?.isGoogleEnabled ?? false,
-                        action: { activateDNS(type: .google) }
+                        action: { activateDNS(type: .google) },
+                        offAction: disableDNSOverride
                     )
                 }
 
@@ -68,7 +63,8 @@ struct MenuBarView: View {
                     dnsToggleRow(
                         label: "Quad9 DNS",
                         isOn: dnsSettings.first?.isQuad9Enabled ?? false,
-                        action: { activateDNS(type: .quad9) }
+                        action: { activateDNS(type: .quad9) },
+                        offAction: disableDNSOverride
                     )
                 }
 
@@ -76,7 +72,8 @@ struct MenuBarView: View {
                     dnsToggleRow(
                         label: "AdGuard DNS",
                         isOn: dnsSettings.first?.isAdGuardEnabled ?? false,
-                        action: { activateDNS(type: .adguard) }
+                        action: { activateDNS(type: .adguard) },
+                        offAction: disableDNSOverride
                     )
                 }
 
@@ -86,7 +83,7 @@ struct MenuBarView: View {
 
                 dnsToggleRow(
                     label: "Default DNS",
-                    isOn: isDefaultDNSActive,
+                    isOn: dnsSettings.first?.isDefaultActive ?? true,
                     action: { disableDNSOverride() }
                 )
 
@@ -99,7 +96,7 @@ struct MenuBarView: View {
                 } label: {
                     Text("Settings")
                 } primaryAction: {
-                    openWindow(id: "settings")
+                    openSettingsWindow()
                 }
                 .padding(.vertical, 5)
 
@@ -114,17 +111,27 @@ struct MenuBarView: View {
             ensureSettingsExist()
         }
         .onReceive(NotificationCenter.default.publisher(for: .bardnsOpenSettingsGeneral)) { _ in
-            openWindow(id: "settings")
+            openSettingsWindow()
         }
     }
 
-    private func postNotification(title: String, body: String) {
+    // Settings is a separate Window scene, not a child of the menu bar popover — as an
+    // LSUIElement (accessory) app, just calling openWindow can leave the window created
+    // but behind whatever app currently has focus. Activating first ensures it actually
+    // comes to the front.
+    private func openSettingsWindow() {
+        NSApp.activate(ignoringOtherApps: true)
+        openWindow(id: "settings")
+    }
+
+    private func postNotification(title: String, body: String, isFailure: Bool) {
         let center = UNUserNotificationCenter.current()
         center.requestAuthorization(options: [.alert]) { granted, _ in
             guard granted else { return }
             let content = UNMutableNotificationContent()
             content.title = title
             content.body = body
+            content.userInfo = ["isFailure": isFailure]
             let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: nil)
             center.add(request)
         }
@@ -134,10 +141,50 @@ struct MenuBarView: View {
     // menu bar popover has already closed by the time the async DNS change finishes (e.g. because
     // the Touch ID / admin-password prompt stole focus and dismissed it).
     private func notifyFailure() {
+        guard dnsSettings.first?.errorNotificationsEnabled ?? true else { return }
         postNotification(
             title: "Couldn't Update DNS",
-            body: "The change didn't take effect on your Mac's network settings. Try again from the menu."
+            body: "The change didn't take effect on your Mac's network settings. Try again from the menu.",
+            isFailure: true
         )
+    }
+
+    private func notifySuccess(type: DNSType) {
+        guard dnsSettings.first?.successNotificationsEnabled ?? false else { return }
+        postNotification(
+            title: "DNS Switched",
+            body: "Successfully connected to \(displayName(for: type)).",
+            isFailure: false
+        )
+    }
+
+    private func notifyCacheCleared() {
+        guard dnsSettings.first?.successNotificationsEnabled ?? false else { return }
+        postNotification(
+            title: "DNS Cache Cleared",
+            body: "The DNS cache was cleared successfully.",
+            isFailure: false
+        )
+    }
+
+    private func notifyCacheClearFailed() {
+        guard dnsSettings.first?.errorNotificationsEnabled ?? true else { return }
+        postNotification(
+            title: "Couldn't Clear DNS Cache",
+            body: "The DNS cache wasn't cleared. Try again from the menu.",
+            isFailure: true
+        )
+    }
+
+    private func displayName(for type: DNSType) -> String {
+        switch type {
+        case .none: return "Default DNS"
+        case .cloudflare: return "Cloudflare DNS"
+        case .quad9: return "Quad9 DNS"
+        case .adguard: return "AdGuard DNS"
+        case .google: return "Google DNS"
+        case .custom(let server): return server.name
+        }
     }
 
     private func openSettings(on section: SettingsView.Section, autoRunSpeedTest: Bool = false, autoAddCustomDNS: Bool = false) {
@@ -145,20 +192,29 @@ struct MenuBarView: View {
         QuickActionStore.shared.shouldAutoRunSpeedTest = autoRunSpeedTest
         QuickActionStore.shared.shouldAutoAddCustomDNS = autoAddCustomDNS
         NotificationCenter.default.post(name: .bardnsQuickAction, object: nil)
-        openWindow(id: "settings")
+        openSettingsWindow()
     }
 
     private func clearDNSCacheShortcut() {
-        DNSManager.shared.clearDNSCache { _ in }
+        DNSManager.shared.clearDNSCache { success in
+            if success {
+                notifyCacheCleared()
+            } else {
+                notifyCacheClearFailed()
+            }
+        }
     }
 
     @ViewBuilder
-    private func dnsToggleRow(label: String, isOn: Bool, action: @escaping () -> Void) -> some View {
+    private func dnsToggleRow(label: String, isOn: Bool, action: @escaping () -> Void, offAction: (() -> Void)? = nil) -> some View {
         Toggle(label, isOn: Binding(
             get: { isOn },
             set: { newValue in
-                if newValue && !isUpdating {
+                guard !isUpdating else { return }
+                if newValue {
                     action()
+                } else {
+                    offAction?()
                 }
             }
         ))
@@ -195,65 +251,39 @@ struct MenuBarView: View {
         }
     }
 
+    private func presetServers(for type: DNSType) -> [String] {
+        switch type {
+        case .cloudflare: return DNSManager.shared.cloudflareServers
+        case .quad9: return DNSManager.shared.quad9Servers
+        case .adguard: return DNSManager.shared.adguardServers
+        case .google: return DNSManager.shared.googleServers
+        case .custom, .none: return []
+        }
+    }
+
+    private func handleActivationResult(success: Bool, type: DNSType) {
+        if success {
+            Task { @MainActor in
+                updateSettings(type: type)
+            }
+            notifySuccess(type: type)
+        } else {
+            notifyFailure()
+        }
+        isUpdating = false
+    }
+
     private func activateDNS(type: DNSType) {
         isUpdating = true
 
         switch type {
-        case .cloudflare:
-            DNSManager.shared.setPredefinedDNS(dnsServers: DNSManager.shared.cloudflareServers) { success in
-                if success {
-                    Task { @MainActor in
-                        updateSettings(type: type)
-                    }
-                } else {
-                    notifyFailure()
-                }
-                isUpdating = false
-            }
-        case .quad9:
-            DNSManager.shared.setPredefinedDNS(dnsServers: DNSManager.shared.quad9Servers) { success in
-                if success {
-                    Task { @MainActor in
-                        updateSettings(type: type)
-                    }
-                } else {
-                    notifyFailure()
-                }
-                isUpdating = false
-            }
-        case .adguard:
-            DNSManager.shared.setPredefinedDNS(dnsServers: DNSManager.shared.adguardServers) { success in
-                if success {
-                    Task { @MainActor in
-                        updateSettings(type: type)
-                    }
-                } else {
-                    notifyFailure()
-                }
-                isUpdating = false
-            }
-        case .google:
-            DNSManager.shared.setPredefinedDNS(dnsServers: DNSManager.shared.googleServers) { success in
-                if success {
-                    Task { @MainActor in
-                        updateSettings(type: type)
-                    }
-                } else {
-                    notifyFailure()
-                }
-                isUpdating = false
+        case .cloudflare, .quad9, .adguard, .google:
+            DNSManager.shared.setPredefinedDNS(dnsServers: presetServers(for: type)) { success in
+                handleActivationResult(success: success, type: type)
             }
         case .custom(let server):
             DNSManager.shared.setCustomDNS(servers: server.dnsEntries) { success in
-                if success {
-                    Task { @MainActor in
-                        updateSettings(type: type)
-                    }
-                } else {
-                    notifyFailure()
-                }
-                isUpdating = false
-
+                handleActivationResult(success: success, type: type)
             }
         case .none:
             updateSettings(type: type)
@@ -269,6 +299,7 @@ struct MenuBarView: View {
                 Task { @MainActor in
                     updateSettings(type: .none)
                 }
+                notifySuccess(type: .none)
             } else {
                 notifyFailure()
             }
@@ -286,8 +317,8 @@ struct MenuBarView: View {
 
         settings.isCloudflareEnabled = (type == .cloudflare)
         settings.isQuad9Enabled = (type == .quad9)
-        settings.isAdGuardEnabled = type == .adguard ? true : nil
-        settings.isGoogleEnabled = type == .google ? true : nil
+        settings.isAdGuardEnabled = (type == .adguard)
+        settings.isGoogleEnabled = (type == .google)
 
         if case .custom(let server) = type {
             settings.activeCustomDNSID = server.id
