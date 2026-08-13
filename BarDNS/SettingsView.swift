@@ -140,15 +140,6 @@ private struct GeneralSettingsView: View {
             }
 
             Section {
-                Toggle("Launch at Login", isOn: $launchAtLogin)
-                    .onChange(of: launchAtLogin) { _, newValue in
-                        setLaunchAtLogin(newValue)
-                    }
-            } header: {
-                Text("Startup")
-            }
-
-            Section {
                 HStack {
                     Text("Currently Active")
                     Spacer()
@@ -173,6 +164,15 @@ private struct GeneralSettingsView: View {
                 Text("DNS Status")
             } footer: {
                 Text("Reverts your Mac to the DNS servers provided automatically by your router or ISP.")
+            }
+
+            Section {
+                Toggle("Launch at Login", isOn: $launchAtLogin)
+                    .onChange(of: launchAtLogin) { _, newValue in
+                        setLaunchAtLogin(newValue)
+                    }
+            } header: {
+                Text("Startup")
             }
 
             Section {
