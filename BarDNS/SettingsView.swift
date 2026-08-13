@@ -144,6 +144,8 @@ private struct GeneralSettingsView: View {
                     .onChange(of: launchAtLogin) { _, newValue in
                         setLaunchAtLogin(newValue)
                     }
+            } header: {
+                Text("Startup")
             }
 
             Section {
@@ -167,6 +169,8 @@ private struct GeneralSettingsView: View {
                         .disabled(isUpdating)
                     }
                 }
+            } header: {
+                Text("DNS Status")
             } footer: {
                 Text("Reverts your Mac to the DNS servers provided automatically by your router or ISP.")
             }
