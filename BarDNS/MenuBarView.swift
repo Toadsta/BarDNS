@@ -158,6 +158,24 @@ struct MenuBarView: View {
         )
     }
 
+    private func notifyCacheCleared() {
+        guard dnsSettings.first?.successNotificationsEnabled ?? false else { return }
+        postNotification(
+            title: "DNS Cache Cleared",
+            body: "The DNS cache was cleared successfully.",
+            isFailure: false
+        )
+    }
+
+    private func notifyCacheClearFailed() {
+        guard dnsSettings.first?.errorNotificationsEnabled ?? true else { return }
+        postNotification(
+            title: "Couldn't Clear DNS Cache",
+            body: "The DNS cache wasn't cleared. Try again from the menu.",
+            isFailure: true
+        )
+    }
+
     private func displayName(for type: DNSType) -> String {
         switch type {
         case .none: return "Default DNS"
@@ -178,7 +196,13 @@ struct MenuBarView: View {
     }
 
     private func clearDNSCacheShortcut() {
-        DNSManager.shared.clearDNSCache { _ in }
+        DNSManager.shared.clearDNSCache { success in
+            if success {
+                notifyCacheCleared()
+            } else {
+                notifyCacheClearFailed()
+            }
+        }
     }
 
     @ViewBuilder
