@@ -38,8 +38,17 @@ struct SettingsView: View {
             switch self {
             case .general: return .gray
             case .dnsProviders: return .blue
-            case .advanced: return .purple
+            case .advanced: return .orange
             case .about: return .gray
+            }
+        }
+
+        // wrench.and.screwdriver.fill renders visually larger than the other glyphs at the
+        // same point size, so it gets a smaller size to look consistent in the badge.
+        var iconSize: CGFloat {
+            switch self {
+            case .advanced: return 9
+            default: return 11
             }
         }
     }
@@ -57,7 +66,7 @@ struct SettingsView: View {
                         .frame(width: 22, height: 22)
                         .overlay {
                             Image(systemName: section.icon)
-                                .font(.system(size: 11, weight: .semibold))
+                                .font(.system(size: section.iconSize, weight: .semibold))
                                 .foregroundStyle(.white)
                         }
                 }
