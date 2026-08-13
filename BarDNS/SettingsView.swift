@@ -147,15 +147,6 @@ private struct GeneralSettingsView: View {
             }
 
             Section {
-                Toggle("Error Notifications", isOn: binding(\.errorNotificationsEnabled, default: true))
-                Toggle("Success Notifications", isOn: binding(\.successNotificationsEnabled, default: false))
-            } header: {
-                Text("Notifications")
-            } footer: {
-                Text("Get notified when a DNS change succeeds or fails.")
-            }
-
-            Section {
                 HStack {
                     Text("Currently Active")
                     Spacer()
@@ -178,6 +169,15 @@ private struct GeneralSettingsView: View {
                 }
             } footer: {
                 Text("Reverts your Mac to the DNS servers provided automatically by your router or ISP.")
+            }
+
+            Section {
+                Toggle("Error Notifications", isOn: binding(\.errorNotificationsEnabled, default: true))
+                Toggle("Success Notifications", isOn: binding(\.successNotificationsEnabled, default: false))
+            } header: {
+                Text("Notifications")
+            } footer: {
+                Text("Get notified when a DNS change succeeds or fails.")
             }
         }
         .formStyle(.grouped)
