@@ -85,15 +85,23 @@ class DNSManager {
                             let task = Process()
                             task.launchPath = "/bin/bash"
                             task.arguments = ["-c", command]
-                            
-                            let pipe = Pipe()
-                            task.standardOutput = pipe
-                            
+
+                            let outputPipe = Pipe()
+                            let errorPipe = Pipe()
+                            task.standardOutput = outputPipe
+                            task.standardError = errorPipe
+
                             do {
                                 try task.run()
                                 task.waitUntilExit()
-                                
+
                                 let success = task.terminationStatus == 0
+                                if !success {
+                                    let errorData = errorPipe.fileHandleForReading.readDataToEndOfFile()
+                                    let errorOutput = String(data: errorData, encoding: .utf8)?
+                                        .trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+                                    print("Command failed (exit \(task.terminationStatus)): \(command)\n\(errorOutput)")
+                                }
                                 DispatchQueue.main.async { completion(success) }
                             } catch {
                                 print("Failed to execute command: \(error)")

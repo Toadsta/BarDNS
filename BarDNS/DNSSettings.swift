@@ -43,11 +43,11 @@ final class DNSSettings {
     var isQuad9Enabled: Bool
     var activeCustomDNSID: String?
     var timestamp: Date
-    var isAdGuardEnabled: Bool?
+    var isAdGuardEnabled: Bool = false
     var isCloudflareVisible: Bool = true
     var isQuad9Visible: Bool = true
     var isAdGuardVisible: Bool = true
-    var isGoogleEnabled: Bool?
+    var isGoogleEnabled: Bool = false
     var isGoogleVisible: Bool = true
 
     init(id: String = UUID().uuidString,
@@ -55,11 +55,11 @@ final class DNSSettings {
          isQuad9Enabled: Bool = false,
          activeCustomDNSID: String? = nil,
          timestamp: Date = Date(),
-         isAdGuardEnabled: Bool? = false,
+         isAdGuardEnabled: Bool = false,
          isCloudflareVisible: Bool = true,
          isQuad9Visible: Bool = true,
          isAdGuardVisible: Bool = true,
-         isGoogleEnabled: Bool? = false,
+         isGoogleEnabled: Bool = false,
          isGoogleVisible: Bool = true) {
         self.id = id
         self.isCloudflareEnabled = isCloudflareEnabled
@@ -80,8 +80,8 @@ extension DNSSettings {
     func resetToDefault() {
         isCloudflareEnabled = false
         isQuad9Enabled = false
-        isAdGuardEnabled = nil
-        isGoogleEnabled = nil
+        isAdGuardEnabled = false
+        isGoogleEnabled = false
         activeCustomDNSID = nil
         timestamp = Date()
     }

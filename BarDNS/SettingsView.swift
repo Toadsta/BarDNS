@@ -107,8 +107,8 @@ private struct GeneralSettingsView: View {
         guard let settings = dnsSettings.first else { return "Default DNS" }
         if settings.isCloudflareEnabled { return "Cloudflare DNS" }
         if settings.isQuad9Enabled { return "Quad9 DNS" }
-        if settings.isAdGuardEnabled ?? false { return "AdGuard DNS" }
-        if settings.isGoogleEnabled ?? false { return "Google DNS" }
+        if settings.isAdGuardEnabled { return "AdGuard DNS" }
+        if settings.isGoogleEnabled { return "Google DNS" }
         if let activeID = settings.activeCustomDNSID,
            let server = customServers.first(where: { $0.id == activeID }) {
             return server.name
@@ -120,8 +120,8 @@ private struct GeneralSettingsView: View {
         guard let settings = dnsSettings.first else { return true }
         return !settings.isCloudflareEnabled &&
             !settings.isQuad9Enabled &&
-            !(settings.isAdGuardEnabled ?? false) &&
-            !(settings.isGoogleEnabled ?? false) &&
+            !settings.isAdGuardEnabled &&
+            !settings.isGoogleEnabled &&
             settings.activeCustomDNSID == nil
     }
 

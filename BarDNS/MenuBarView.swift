@@ -7,6 +7,7 @@
 //
 import SwiftUI
 import SwiftData
+import AppKit
 import UserNotifications
 
 struct MenuBarView: View {
@@ -20,8 +21,8 @@ struct MenuBarView: View {
         guard let settings = dnsSettings.first else { return true }
         return !settings.isCloudflareEnabled &&
             !settings.isQuad9Enabled &&
-            !(settings.isAdGuardEnabled ?? false) &&
-            !(settings.isGoogleEnabled ?? false) &&
+            !settings.isAdGuardEnabled &&
+            !settings.isGoogleEnabled &&
             settings.activeCustomDNSID == nil
     }
 
@@ -40,7 +41,8 @@ struct MenuBarView: View {
                     dnsToggleRow(
                         label: server.name,
                         isOn: dnsSettings.first?.activeCustomDNSID == server.id,
-                        action: { activateDNS(type: .custom(server)) }
+                        action: { activateDNS(type: .custom(server)) },
+                        offAction: disableDNSOverride
                     )
                 }
 
@@ -52,7 +54,8 @@ struct MenuBarView: View {
                     dnsToggleRow(
                         label: "Cloudflare DNS",
                         isOn: dnsSettings.first?.isCloudflareEnabled ?? false,
-                        action: { activateDNS(type: .cloudflare) }
+                        action: { activateDNS(type: .cloudflare) },
+                        offAction: disableDNSOverride
                     )
                 }
 
@@ -60,7 +63,8 @@ struct MenuBarView: View {
                     dnsToggleRow(
                         label: "Google DNS",
                         isOn: dnsSettings.first?.isGoogleEnabled ?? false,
-                        action: { activateDNS(type: .google) }
+                        action: { activateDNS(type: .google) },
+                        offAction: disableDNSOverride
                     )
                 }
 
@@ -68,7 +72,8 @@ struct MenuBarView: View {
                     dnsToggleRow(
                         label: "Quad9 DNS",
                         isOn: dnsSettings.first?.isQuad9Enabled ?? false,
-                        action: { activateDNS(type: .quad9) }
+                        action: { activateDNS(type: .quad9) },
+                        offAction: disableDNSOverride
                     )
                 }
 
@@ -76,7 +81,8 @@ struct MenuBarView: View {
                     dnsToggleRow(
                         label: "AdGuard DNS",
                         isOn: dnsSettings.first?.isAdGuardEnabled ?? false,
-                        action: { activateDNS(type: .adguard) }
+                        action: { activateDNS(type: .adguard) },
+                        offAction: disableDNSOverride
                     )
                 }
 
@@ -99,7 +105,7 @@ struct MenuBarView: View {
                 } label: {
                     Text("Settings")
                 } primaryAction: {
-                    openWindow(id: "settings")
+                    openSettingsWindow()
                 }
                 .padding(.vertical, 5)
 
@@ -114,8 +120,17 @@ struct MenuBarView: View {
             ensureSettingsExist()
         }
         .onReceive(NotificationCenter.default.publisher(for: .bardnsOpenSettingsGeneral)) { _ in
-            openWindow(id: "settings")
+            openSettingsWindow()
         }
+    }
+
+    // Settings is a separate Window scene, not a child of the menu bar popover — as an
+    // LSUIElement (accessory) app, just calling openWindow can leave the window created
+    // but behind whatever app currently has focus. Activating first ensures it actually
+    // comes to the front.
+    private func openSettingsWindow() {
+        NSApp.activate(ignoringOtherApps: true)
+        openWindow(id: "settings")
     }
 
     private func postNotification(title: String, body: String) {
@@ -145,7 +160,7 @@ struct MenuBarView: View {
         QuickActionStore.shared.shouldAutoRunSpeedTest = autoRunSpeedTest
         QuickActionStore.shared.shouldAutoAddCustomDNS = autoAddCustomDNS
         NotificationCenter.default.post(name: .bardnsQuickAction, object: nil)
-        openWindow(id: "settings")
+        openSettingsWindow()
     }
 
     private func clearDNSCacheShortcut() {
@@ -153,12 +168,15 @@ struct MenuBarView: View {
     }
 
     @ViewBuilder
-    private func dnsToggleRow(label: String, isOn: Bool, action: @escaping () -> Void) -> some View {
+    private func dnsToggleRow(label: String, isOn: Bool, action: @escaping () -> Void, offAction: (() -> Void)? = nil) -> some View {
         Toggle(label, isOn: Binding(
             get: { isOn },
             set: { newValue in
-                if newValue && !isUpdating {
+                guard !isUpdating else { return }
+                if newValue {
                     action()
+                } else {
+                    offAction?()
                 }
             }
         ))
@@ -286,8 +304,8 @@ struct MenuBarView: View {
 
         settings.isCloudflareEnabled = (type == .cloudflare)
         settings.isQuad9Enabled = (type == .quad9)
-        settings.isAdGuardEnabled = type == .adguard ? true : nil
-        settings.isGoogleEnabled = type == .google ? true : nil
+        settings.isAdGuardEnabled = (type == .adguard)
+        settings.isGoogleEnabled = (type == .google)
 
         if case .custom(let server) = type {
             settings.activeCustomDNSID = server.id
