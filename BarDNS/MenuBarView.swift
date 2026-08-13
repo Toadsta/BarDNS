@@ -124,13 +124,14 @@ struct MenuBarView: View {
         openWindow(id: "settings")
     }
 
-    private func postNotification(title: String, body: String) {
+    private func postNotification(title: String, body: String, isFailure: Bool) {
         let center = UNUserNotificationCenter.current()
         center.requestAuthorization(options: [.alert]) { granted, _ in
             guard granted else { return }
             let content = UNMutableNotificationContent()
             content.title = title
             content.body = body
+            content.userInfo = ["isFailure": isFailure]
             let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: nil)
             center.add(request)
         }
@@ -143,7 +144,8 @@ struct MenuBarView: View {
         guard dnsSettings.first?.errorNotificationsEnabled ?? true else { return }
         postNotification(
             title: "Couldn't Update DNS",
-            body: "The change didn't take effect on your Mac's network settings. Try again from the menu."
+            body: "The change didn't take effect on your Mac's network settings. Try again from the menu.",
+            isFailure: true
         )
     }
 
@@ -151,7 +153,8 @@ struct MenuBarView: View {
         guard dnsSettings.first?.successNotificationsEnabled ?? false else { return }
         postNotification(
             title: "DNS Switched",
-            body: "Successfully connected to \(displayName(for: type))."
+            body: "Successfully connected to \(displayName(for: type)).",
+            isFailure: false
         )
     }
 

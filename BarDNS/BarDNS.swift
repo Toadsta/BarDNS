@@ -54,7 +54,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
 
     func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
         NSApp.activate(ignoringOtherApps: true)
-        NotificationMessageStore.shared.failureMessage = response.notification.request.content.body
+        if response.notification.request.content.userInfo["isFailure"] as? Bool == true {
+            NotificationMessageStore.shared.failureMessage = response.notification.request.content.body
+        }
         NotificationCenter.default.post(name: .bardnsOpenSettingsGeneral, object: nil)
         completionHandler()
     }
