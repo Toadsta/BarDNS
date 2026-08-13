@@ -124,52 +124,56 @@ struct MenuBarView: View {
         openWindow(id: "settings")
     }
 
-    private func postNotification(title: String, body: String, isFailure: Bool) {
-        let center = UNUserNotificationCenter.current()
-        center.requestAuthorization(options: [.alert]) { granted, _ in
-            guard granted else { return }
-            let content = UNMutableNotificationContent()
-            content.title = title
-            content.body = body
-            content.userInfo = ["isFailure": isFailure]
-            let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: nil)
-            center.add(request)
-        }
-    }
-
     // A system notification, unlike an alert attached to this view, still reaches the user if the
     // menu bar popover has already closed by the time the async DNS change finishes (e.g. because
-    // the Touch ID / admin-password prompt stole focus and dismissed it).
-    private func notifyFailure() {
-        guard dnsSettings.first?.errorNotificationsEnabled ?? true else { return }
-        postNotification(
+    // the admin-password prompt stole focus and dismissed it).
+    //
+    // That same teardown is why the toggles are read into a snapshot *before* the async work
+    // starts: once the popover closes, this view's `@Query` results are empty, so reading
+    // `dnsSettings.first?.successNotificationsEnabled` in the completion handler always fell
+    // back to `false` and the notification was silently dropped.
+    private struct NotificationPreferences {
+        let successEnabled: Bool
+        let errorEnabled: Bool
+    }
+
+    private func currentNotificationPreferences() -> NotificationPreferences {
+        NotificationPreferences(
+            successEnabled: dnsSettings.first?.successNotificationsEnabled ?? false,
+            errorEnabled: dnsSettings.first?.errorNotificationsEnabled ?? true
+        )
+    }
+
+    private func notifyFailure(_ preferences: NotificationPreferences) {
+        guard preferences.errorEnabled else { return }
+        DNSNotifier.post(
             title: "Couldn't Update DNS",
             body: "The change didn't take effect on your Mac's network settings. Try again from the menu.",
             isFailure: true
         )
     }
 
-    private func notifySuccess(type: DNSType) {
-        guard dnsSettings.first?.successNotificationsEnabled ?? false else { return }
-        postNotification(
+    private func notifySuccess(type: DNSType, preferences: NotificationPreferences) {
+        guard preferences.successEnabled else { return }
+        DNSNotifier.post(
             title: "DNS Switched",
             body: "Successfully connected to \(displayName(for: type)).",
             isFailure: false
         )
     }
 
-    private func notifyCacheCleared() {
-        guard dnsSettings.first?.successNotificationsEnabled ?? false else { return }
-        postNotification(
+    private func notifyCacheCleared(_ preferences: NotificationPreferences) {
+        guard preferences.successEnabled else { return }
+        DNSNotifier.post(
             title: "DNS Cache Cleared",
             body: "The DNS cache was cleared successfully.",
             isFailure: false
         )
     }
 
-    private func notifyCacheClearFailed() {
-        guard dnsSettings.first?.errorNotificationsEnabled ?? true else { return }
-        postNotification(
+    private func notifyCacheClearFailed(_ preferences: NotificationPreferences) {
+        guard preferences.errorEnabled else { return }
+        DNSNotifier.post(
             title: "Couldn't Clear DNS Cache",
             body: "The DNS cache wasn't cleared. Try again from the menu.",
             isFailure: true
@@ -196,11 +200,12 @@ struct MenuBarView: View {
     }
 
     private func clearDNSCacheShortcut() {
+        let preferences = currentNotificationPreferences()
         DNSManager.shared.clearDNSCache { success in
             if success {
-                notifyCacheCleared()
+                notifyCacheCleared(preferences)
             } else {
-                notifyCacheClearFailed()
+                notifyCacheClearFailed(preferences)
             }
         }
     }
@@ -261,29 +266,28 @@ struct MenuBarView: View {
         }
     }
 
-    private func handleActivationResult(success: Bool, type: DNSType) {
+    private func handleActivationResult(success: Bool, type: DNSType, preferences: NotificationPreferences) {
         if success {
-            Task { @MainActor in
-                updateSettings(type: type)
-            }
-            notifySuccess(type: type)
+            updateSettings(type: type)
+            notifySuccess(type: type, preferences: preferences)
         } else {
-            notifyFailure()
+            notifyFailure(preferences)
         }
         isUpdating = false
     }
 
     private func activateDNS(type: DNSType) {
         isUpdating = true
+        let preferences = currentNotificationPreferences()
 
         switch type {
         case .cloudflare, .quad9, .adguard, .google:
             DNSManager.shared.setPredefinedDNS(dnsServers: presetServers(for: type)) { success in
-                handleActivationResult(success: success, type: type)
+                handleActivationResult(success: success, type: type, preferences: preferences)
             }
         case .custom(let server):
             DNSManager.shared.setCustomDNS(servers: server.dnsEntries) { success in
-                handleActivationResult(success: success, type: type)
+                handleActivationResult(success: success, type: type, preferences: preferences)
             }
         case .none:
             updateSettings(type: type)
@@ -294,14 +298,14 @@ struct MenuBarView: View {
     private func disableDNSOverride() {
         guard !isUpdating else { return }
         isUpdating = true
+        let preferences = currentNotificationPreferences()
+
         DNSManager.shared.disableDNS { success in
             if success {
-                Task { @MainActor in
-                    updateSettings(type: .none)
-                }
-                notifySuccess(type: .none)
+                updateSettings(type: .none)
+                notifySuccess(type: .none, preferences: preferences)
             } else {
-                notifyFailure()
+                notifyFailure(preferences)
             }
             isUpdating = false
         }

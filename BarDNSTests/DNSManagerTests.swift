@@ -79,4 +79,59 @@ final class DNSManagerTests: XCTestCase {
     func testTrimsWhitespace() {
         XCTAssertEqual(manager.parseDNSServer("  8.8.8.8  "), "8.8.8.8")
     }
+
+    // MARK: - shellQuoted
+    //
+    // Network service names are user-renameable and reach the privileged path, which has no
+    // argument-vector form to hide behind. An apostrophe in a name like "Tori's VPN" is
+    // ordinary; the same hole is what a "'; rm -rf ~; '" name would walk through.
+
+    func testShellQuotesOrdinaryServiceName() {
+        XCTAssertEqual(DNSManager.shellQuoted("Wi-Fi"), "'Wi-Fi'")
+    }
+
+    func testShellQuotesApostropheInServiceName() {
+        XCTAssertEqual(DNSManager.shellQuoted("Tori's VPN"), "'Tori'\\''s VPN'")
+    }
+
+    func testShellQuotingNeutralizesMetacharacters() {
+        let hostile = [
+            "'; rm -rf ~; '",
+            "$(touch /tmp/pwned)",
+            "`touch /tmp/pwned`",
+            "Wi-Fi && echo pwned",
+            "Wi-Fi | tee /tmp/pwned",
+            "Wi-Fi\nrm -rf ~"
+        ]
+        for name in hostile {
+            let quoted = DNSManager.shellQuoted(name)
+            // Every quoted argument opens and closes with a single quote, and the only single
+            // quotes inside are the escape sequence '\'' — so nothing can terminate the string
+            // and start a new command.
+            XCTAssertTrue(quoted.hasPrefix("'"), "\(name.debugDescription) should be quoted")
+            XCTAssertTrue(quoted.hasSuffix("'"), "\(name.debugDescription) should be quoted")
+            let interior = quoted.dropFirst().dropLast()
+            let strayQuotes = interior
+                .replacingOccurrences(of: "'\\''", with: "")
+                .filter { $0 == "'" }
+            XCTAssertTrue(strayQuotes.isEmpty, "\(name.debugDescription) leaked a bare quote")
+        }
+    }
+
+    // MARK: - appleScriptQuoted
+
+    func testAppleScriptQuotesPlainString() {
+        XCTAssertEqual(DNSManager.appleScriptQuoted("echo hi"), "\"echo hi\"")
+    }
+
+    func testAppleScriptEscapesQuotesAndBackslashes() {
+        XCTAssertEqual(DNSManager.appleScriptQuoted("say \"hi\""), "\"say \\\"hi\\\"\"")
+        XCTAssertEqual(DNSManager.appleScriptQuoted("back\\slash"), "\"back\\\\slash\"")
+    }
+
+    func testAppleScriptEscapesBackslashBeforeQuote() {
+        // Backslashes must be escaped first, or the escape added for the quote gets escaped
+        // a second time and the literal breaks open.
+        XCTAssertEqual(DNSManager.appleScriptQuoted("a\\\"b"), "\"a\\\\\\\"b\"")
+    }
 }

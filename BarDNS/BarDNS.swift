@@ -11,6 +11,7 @@ import SwiftData
 import AppKit
 import UserNotifications
 import Observation
+import os
 
 extension Notification.Name {
     /// Posted when the user clicks a BarDNS notification (e.g. a failed DNS change);
@@ -44,12 +45,52 @@ final class QuickActionStore {
     var shouldAutoAddCustomDNS = false
 }
 
-/// Only needed so notification clicks can be intercepted (UNUserNotificationCenter's
-/// delegate) — without this, clicking a notification just activates the app with no
-/// way to route it to Settings.
+/// Posts BarDNS's notifications.
+///
+/// Deliberately free of view state: the MenuBarExtra's content view is torn down as soon as
+/// the popover closes, which is routinely *before* an async DNS change finishes, so anything
+/// reading `@Query` results at that point sees an empty list.
+enum DNSNotifier {
+    static func post(title: String, body: String, isFailure: Bool) {
+        let content = UNMutableNotificationContent()
+        content.title = title
+        content.body = body
+        content.userInfo = ["isFailure": isFailure]
+        content.sound = .default
+
+        let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: nil)
+        UNUserNotificationCenter.current().add(request)
+    }
+}
+
+/// Handles notification clicks (routing them to Settings) and, just as importantly, tells
+/// macOS to show notifications while BarDNS is frontmost.
 final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDelegate {
+    private let log = Logger(subsystem: "com.toadsie.BarDNS", category: "Notifications")
+
     func applicationDidFinishLaunching(_ notification: Notification) {
-        UNUserNotificationCenter.current().delegate = self
+        let center = UNUserNotificationCenter.current()
+        center.delegate = self
+
+        // Ask once, here. Requesting inside every post meant the very first notification raced
+        // the permission prompt, and a denial silently swallowed everything after it.
+        center.requestAuthorization(options: [.alert, .sound]) { [weak self] granted, error in
+            if let error {
+                self?.log.error("Notification authorization failed: \(error.localizedDescription, privacy: .public)")
+            } else if !granted {
+                self?.log.info("Notification authorization was denied")
+            }
+        }
+    }
+
+    /// macOS suppresses a notification while the app that posted it is frontmost, unless the
+    /// delegate says otherwise here. Interacting with the menu bar item — or dismissing the
+    /// admin prompt — makes BarDNS frontmost, so without this every notification the app
+    /// posted about its own work was dropped without a trace.
+    func userNotificationCenter(_ center: UNUserNotificationCenter,
+                                willPresent notification: UNNotification,
+                                withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
+        completionHandler([.banner, .list, .sound])
     }
 
     func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {

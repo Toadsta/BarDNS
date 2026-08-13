@@ -71,3 +71,5 @@ build/
 
 # Local Claude Code agent config (not part of the app)
 .claude/
+# Release artifacts
+*.dmg
